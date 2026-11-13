@@ -1,0 +1,8 @@
+LICENCIAS DE LITTERA (para el vendedor)
+- COMPILAR.bat crea tus claves la primera vez: keys\private.pem (PRIVADA, no la compartas, haz copia) y build\public.pem (publica, va dentro del programa).
+- Edita build\product.json (tu nombre, web de compra, email de soporte, dias de prueba) ANTES de compilar.
+- Por cada venta: EMITIR-LICENCIA.bat -> nombre y email -> envia al cliente la clave LITTERA-... (queda en keys\licencias-emitidas.csv).
+- Con caducidad: node tools\keygen.js make "Nombre" email Pro 2027-12-31
+- Tras 14 dias de prueba el programa pide la clave (tambien en Ayuda > Licencia...). Se valida sin conexion.
+- Reparte SIEMPRE el instalador dist\Littera-Instalador-2.3.0.exe, nunca la carpeta del proyecto ni keys\.
+- Sin certificado de firma de codigo, Windows mostrara "editor desconocido" (SmartScreen). Para firmar define CSC_LINK y CSC_KEY_PASSWORD antes de compilar.

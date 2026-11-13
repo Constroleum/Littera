@@ -1,0 +1,102 @@
+NOVEDADES DE LA VERSIÓN 2.3
+- Modo concentración a pantalla completa: botón «Sin distracciones» o Ctrl+Mayús+F (salir con Esc). F11 = pantalla completa normal.
+- Atajos: F7 sinónimos y antónimos (sin conexión) · F8 diccionario del idioma del documento · Mayús+F8 sinónimos en línea del idioma ·
+  Alt+1 RAE · Alt+2 IEC · Alt+3 Albert Jané · Alt+4 Merriam-Webster · Alt+5 M-W Thesaurus · Alt+6 Larousse · Alt+7 CNRTL.
+  Usan la palabra seleccionada o la del cursor. Lista completa en Ayuda > Atajos de teclado.
+
+NOVEDADES DE LA VERSIÓN 2.2
+- Inglés y francés, igual que castellano y catalán: corrector ortográfico sin conexión (inglés: se aceptan ortografía americana y británica),
+  sinónimos y antónimos sin conexión (WordNet para inglés; Dicollecte para francés; antónimos propios añadidos),
+  revisión de gramática en línea (LanguageTool) y diccionarios en línea (Merriam-Webster, Larousse, CNRTL, además de RAE, IEC y Albert Jané).
+- Selector de idioma del libro y de cada escena: Castellano, Català, English, Français o «Todos los idiomas».
+- Diccionario de sinónimos de Albert Jané (IEC) en línea para catalán.
+
+PARA iPAD y OneDrive: lee IPAD-LEEME.txt
+
+NOVEDADES DE LA VERSIÓN 2.1
+- NUEVO «Lienzo» (botón junto a Escritura y Tablón): una pizarra libre para articular la historia.
+  · Añade escenas, secciones, personajes y escenarios del proyecto (botón «Del proyecto» o arrastrándolos desde el clasificador).
+  · Notas, marcos para agrupar, eventos y líneas de tiempo.
+  · Flechas entre cualquier elemento: arrastra desde el punto ● del elemento seleccionado (o usa «Enlazar»).
+    Cada flecha tiene etiqueta, estilo (continua, discontinua, punteada), dirección, color y curvatura.
+  · Relaciones automáticas: líneas finas entre cada escena y su punto de vista, escenario y personajes presentes.
+  · «Distribuir» ordena por capítulos; «Alinear en la línea» coloca los elementos sobre la línea de tiempo.
+  · Zoom con la rueda, mover arrastrando el fondo, Mayús+arrastrar para seleccionar varios,
+    Deshacer/Rehacer (Ctrl+Z / Ctrl+Y), Suprimir para borrar, exportar a PNG.
+  · El lienzo se guarda dentro del proyecto.
+- NUEVO sistema de licencias (ver LICENCIAS.txt).
+- El ejecutable, el instalador y el desinstalador llevan el logo de Littera.
+
+LITTERA PARA WINDOWS  (versión 2.0)
+===================================
+
+NOVEDADES DE LA VERSIÓN 2.0
+  - Nombre y logo nuevos (Littera). Temas de color: Marfil, 4 grises, 5 de Sahara, Oscuro e Índigo (selector en la barra superior).
+  - Secciones: botón «+ Sección» (igual que una escena, con su ficha).
+  - Compilar: elige si salen los nombres de carpetas/capítulos y los de escenas/secciones, y el separador entre ellas.
+    «Excluir al compilar» en el Inspector deja fuera un documento (la carpeta Investigación ya viene excluida).
+  - Libro > Encabezados y pies: 7 estilos de encabezado, 7 de pie, filetes, mayúsculas/cursiva, formato del número (1, – 1 –, Página 1, i, I).
+  - Libro > Portada: 13 estilos (marco doble, editorial, bandas, pergamino, burdeos y oro, índigo y marfil...) e imagen de portada.
+  - Imágenes: botón Imagen, pegar o arrastrar. Clic en la imagen: ancho, alineación, pie y borrar. Salen en PDF y Word.
+  - Párrafo: botón «¶ Párrafo…» con alineación (incl. última línea centrada/derecha y distribuida), sangrías (incl. francesa),
+    espaciado antes/después, interlineado múltiple o exacto, saltos de página, conservar con el siguiente / líneas juntas,
+    viudas y huérfanas, fondo y bordes. En Libro > Página: interlineado, espacio entre párrafos y sangría de 1.ª línea de todo el libro.
+  - Tamaño de letra: la barra refleja siempre el tamaño del texto bajo el cursor, y al pulsar Intro o empezar a escribir se conserva.
+    Los tamaños se muestran en puntos. Al pegar texto de fuera se limpian tamaños y fuentes ajenos.
+
+DICCIONARIOS (¿funcionan sin internet?)
+  Sí. El corrector (Hunspell) y los sinónimos/antónimos (carpeta dict) se leen del disco: no necesitan conexión.
+  Solo necesitan internet: el botón «Gramática» (LanguageTool) y las búsquedas en la RAE/IEC del menú Diccionarios.
+
+USAR EL PROGRAMA
+  Haz doble clic en COMPILAR.bat: genera en la carpeta "dist" dos programas:
+  - Littera-Instalador-2.0.0.exe : instalador normal (acceso directo en escritorio y menu Inicio).
+  - Littera-Portable-2.0.0.exe   : se ejecuta con doble clic, sin instalar.
+  Windows puede mostrar "SmartScreen": pulsa "Mas informacion" > "Ejecutar de todas formas" (no esta firmado).
+
+PROYECTOS
+  - Al abrir Littera ves la pantalla de proyectos: crear, abrir, renombrar, duplicar y eliminar (va a la Papelera).
+  - Cada proyecto es un archivo .littera en Documentos\Littera. Los .pluma de la versión anterior se abren igual (y la primera vez se copian a Documentos\Littera sin borrar los originales).
+  - Se guarda solo mientras escribes. También: Archivo > Guardar (Ctrl+S) y Guardar como... (Ctrl+Shift+S).
+  - Archivo > Nuevo (Ctrl+N), Abrir (Ctrl+O), Proyectos recientes, Todos los proyectos (Ctrl+Shift+P).
+  - Littera deja una copia de seguridad "nombre.littera.bak" junto al proyecto (la versión anterior a esta sesión).
+  - Para llevarte un proyecto a otro ordenador, copia el archivo .littera.
+  - Las copias .json se abren con Archivo > Abrir y se convierten en proyecto.
+
+PDF y Word: "Libro y exportar" > Descargar PDF / Word (cuadro "Guardar como").
+
+EDITOR
+  - Papel: selector de tamaño en la segunda barra (A3, A4, A5, A6, B5, B6, Carta, Legal, 6x9, 5.5x8.5 y Personalizado).
+    La hoja en pantalla tiene el tamaño y los márgenes reales del libro (se cambian en "Libro y exportar").
+    Zoom: ajustar al ancho, 50%-150%.
+  - Fuentes: las de Windows (Georgia, Times, Garamond, Cambria, Palatino, Arial, Calibri, Verdana...) y 17 incluidas en Littera
+    que funcionan sin instalar nada (EB Garamond, Cormorant, Lora, Merriweather, Baskerville, Crimson, Playfair, Source Serif,
+    Open Sans, Lato, Montserrat, Roboto, Nunito, Source Sans, Courier Prime, Special Elite, Caveat).
+    Nota: el PDF/Word exportado usa la fuente del libro (Serif/Sans/Mono) que eliges en "Libro y exportar".
+
+CORRECTOR ORTOGRÁFICO (castellano y català) - funciona SIN conexión
+  - Diccionarios Hunspell incluidos: RLA-ES (castellano de España) y Softcatalà (catalán general).
+  - Las palabras incorrectas se subrayan en rojo. Clic derecho: sugerencias, "Añadir al diccionario" e "Ignorar".
+  - El selector de idioma (Castellano / Català / Ambos) cambia el idioma de corrección de cada documento.
+  - Tu diccionario personal se guarda en tu perfil de Windows y vale para todos los proyectos.
+
+SINÓNIMOS Y ANTÓNIMOS (castellano y català) - sin conexión
+  - Botón "Sinónimos", Mayús+F7, o clic derecho sobre una palabra. Clic en un resultado: sustituye la palabra en el texto.
+  - Reconoce plurales, femeninos y formas verbales habituales (si no encuentra una, prueba con el infinitivo).
+  - Castellano: OpenThesaurus ES, con pocos antónimos propios (se han añadido unos 190 pares frecuentes).
+    Català: diccionari de sinònims de Softcatalà, con antónimos.
+
+GRAMÁTICA (opcional, necesita internet)
+  - Botón "Gramática": usa LanguageTool (languagetool.org) para concordancia, puntuación y estilo en castellano y catalán.
+    Envía el texto del documento a ese servidor externo. Si no quieres enviar texto, no lo uses; todo lo demás es local.
+
+LICENCIAS: ver carpetas dict\licencias y fonts\licencias. Softcatalà (sinónimos): CC BY 4.0.
+
+COMPILAR EL PROGRAMA: doble clic en COMPILAR.bat (necesita Node.js LTS e internet)
+
+MODIFICAR Y RECOMPILAR (opcional)
+  Necesitas Node.js LTS (https://nodejs.org). En esta carpeta:
+     npm install
+     npm start         (probar)
+     npm run dist      (genera los .exe en "dist")
+  Si da error de "symbolic link": activa el Modo de desarrollador de Windows o abre la terminal como administrador.

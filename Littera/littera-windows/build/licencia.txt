@@ -1,0 +1,10 @@
+CONTRATO DE LICENCIA DE USUARIO FINAL DE LITTERA
+
+1. Licencia. Al comprar una clave de licencia obtienes el derecho personal, no exclusivo e intransferible a usar Littera en tus equipos para tu trabajo de escritura. La licencia no incluye el derecho a copiar, revender, alquilar, descompilar ni redistribuir el programa ni las claves.
+2. Prueba. Littera puede usarse de forma gratuita durante el periodo de prueba indicado en el programa. Después es necesaria una clave de licencia.
+3. Tus textos. Los proyectos que escribes son tuyos. Littera los guarda en tu equipo (Documentos\Littera) y no los envía a ningún servidor.
+4. Componentes de terceros. Littera incluye diccionarios y componentes de código abierto (por ejemplo Electron, Hunspell, OpenThesaurus, Softcatalà, jsPDF, JSZip) que se rigen por sus propias licencias, detalladas en la carpeta "dict" y en los archivos de licencia incluidos.
+5. Garantía. El programa se ofrece "tal cual", sin garantías de ningún tipo. Haz copias de seguridad de tus proyectos. El vendedor no responde por pérdidas de datos o beneficios.
+6. Terminación. La licencia termina si incumples estas condiciones.
+
+[Revisa este texto con un abogado antes de vender: es una plantilla orientativa.]

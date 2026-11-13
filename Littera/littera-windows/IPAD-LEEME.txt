@@ -1,0 +1,40 @@
+LITTERA PARA iPAD (aplicación web instalable) + ONEDRIVE
+
+QUÉ ES
+Littera funciona en el iPad desde Safari y se instala en la pantalla de inicio como una app (sin App Store, sin Mac).
+Sirve sin conexión (corrector, sinónimos y antónimos incluidos). Los proyectos se guardan en el iPad y, si quieres, se sincronizan con OneDrive.
+Requisitos: iPadOS 17 o superior (la validación de licencias usa criptografía que Safari incluye desde la 17).
+
+1) CREAR LA CARPETA WEB
+- Haz primero COMPILAR.bat una vez (crea tus claves de licencia) y rellena build\product.json.
+- Ejecuta CREAR-WEB.bat. Genera la carpeta "pwa-dist".
+
+2) PUBLICARLA (necesita HTTPS)
+Sube el CONTENIDO de pwa-dist a cualquier hosting estático con HTTPS: Netlify, Cloudflare Pages, GitHub Pages o tu propio dominio.
+(En Netlify basta con arrastrar la carpeta pwa-dist a https://app.netlify.com/drop.)
+Apunta la dirección final, por ejemplo https://littera.midominio.com/
+
+3) CONECTAR ONEDRIVE (una sola vez, gratis)
+a) Entra en https://entra.microsoft.com con una cuenta Microsoft > Identidad > Aplicaciones > Registros de aplicaciones > Nuevo registro.
+b) Nombre: Littera. Tipos de cuenta: "Cuentas en cualquier directorio de la organización y cuentas Microsoft personales".
+c) URI de redirección: elige la plataforma "Aplicación de página única (SPA)" y escribe EXACTAMENTE tu dirección con barra final: https://littera.midominio.com/
+d) Registrar. Copia el "Id. de aplicación (cliente)".
+e) Permisos de API > Agregar un permiso > Microsoft Graph > Permisos delegados: Files.ReadWrite, User.Read, offline_access.
+f) Pega el identificador en build\product.json, campo "msClientId", y vuelve a ejecutar CREAR-WEB.bat y a subir la carpeta.
+Cada usuario inicia sesión con SU cuenta de OneDrive (no necesitas servidores).
+Aviso de Microsoft: en aplicaciones web la sesión caduca a las 24 horas; el usuario solo tiene que pulsar "Vuelve a conectar".
+
+4) USO EN EL iPAD
+Safari > abre tu dirección > Compartir > "Añadir a pantalla de inicio".
+En la lista de proyectos: botón "OneDrive" > Conectar > elige una carpeta > abre un .littera existente, crea uno nuevo o sube uno del iPad.
+Los cambios se suben solos 2-3 segundos después de escribir; sin conexión se guardan en el iPad y se suben al volver.
+Si el archivo cambió desde otro dispositivo, Littera pregunta qué versión conservar y guarda la otra como copia (no se pierde nada).
+"Exportar" en cada proyecto descarga el .littera; "Importar archivo" lo abre desde Archivos.
+
+5) LICENCIAS
+Las claves son las mismas que en Windows (EMITIR-LICENCIA.bat). Prueba gratuita de 14 días, luego pide clave (Ayuda > Licencia).
+Importante: las claves cubren Windows y web. Una app nativa en la App Store exigiría vender con compra integrada de Apple (comisión 15-30%).
+
+6) LÍMITES CONOCIDOS
+- Safari puede borrar los datos de sitios web que no se usan en 7 días si la web no está instalada en la pantalla de inicio: instálala y sincroniza con OneDrive.
+- Gramática (LanguageTool) y OneDrive requieren internet; el resto funciona sin conexión.

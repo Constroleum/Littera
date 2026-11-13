@@ -1,0 +1,94 @@
+{
+  "name": "littera",
+  "version": "2.3.0",
+  "description": "Littera: escritura de libros por proyectos",
+  "author": "Littera",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.littera.app",
+    "productName": "Littera",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "canvas.js",
+      "assets/**/*",
+      "themes.js",
+      "projects.html",
+      "build/icon.png",
+      "dict/**/*",
+      "fonts/**/*",
+      "node_modules/**/*",
+      "build/icon.ico",
+      "license.js",
+      "licgate.js",
+      "build/product.json",
+      "build/public.pem"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "fileAssociations": [
+        {
+          "ext": "littera",
+          "name": "Proyecto de Littera",
+          "description": "Proyecto de Littera",
+          "icon": "build/icon.ico"
+        },
+        {
+          "ext": "pluma",
+          "name": "Proyecto de Pluma (antiguo)",
+          "description": "Proyecto de Pluma",
+          "icon": "build/icon.ico"
+        }
+      ],
+      "signAndEditExecutable": true,
+      "publisherName": "Littera"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "language": "3082",
+      "artifactName": "Littera-Instalador-${version}.${ext}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "license": "build/licencia.txt",
+      "shortcutName": "Littera"
+    },
+    "portable": {
+      "artifactName": "Littera-Portable-${version}.${ext}"
+    },
+    "electronLanguages": [
+      "es",
+      "ca",
+      "en-US"
+    ],
+    "compression": "maximum",
+    "asarUnpack": [
+      "node_modules/hunspell-asm/**"
+    ]
+  },
+  "dependencies": {
+    "hunspell-asm": "^4.0.2",
+    "jspdf": "2.5.1",
+    "jszip": "3.10.1"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0"
+  }
+}
