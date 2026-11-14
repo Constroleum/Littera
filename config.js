@@ -1,1 +1,1 @@
-window.LITTERA_CFG={"seller":"Littera","buyUrl":"","supportEmail":"","trialDays":14,"msClientId":"","publicKey":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA7bnhXqCYt624xaQSGAfO4/GvVsr6HFCmZDqH4SXs9e8=\n-----END PUBLIC KEY-----\n"};
+window.LITTERA_CFG={"seller":"Littera","buyUrl":"","supportEmail":"","trialDays":14,"msClientId":"33548c8e-9066-4b39-93d7-7d7a3edf9fb3","publicKey":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA7bnhXqCYt624xaQSGAfO4/GvVsr6HFCmZDqH4SXs9e8=\n-----END PUBLIC KEY-----\n"};
