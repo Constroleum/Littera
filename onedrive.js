@@ -2,15 +2,26 @@
 (function(){
 'use strict';
 const CFG=window.LITTERA_CFG||{},P=()=>window.plumaProj;
-const GRAPH='https://graph.microsoft.com/v1.0',AUTH='https://login.microsoftonline.com/common/oauth2/v2.0/',SCOPE='Files.ReadWrite offline_access User.Read',SCOPE_SP='Files.ReadWrite.All Sites.Read.All offline_access User.Read';
+const EL=!!window.plumaOD;let st={configured:false,connected:false,sp:false};const refresh=async()=>{if(EL)try{st=await plumaOD.status()}catch(e){}};
+const GRAPH='https://graph.microsoft.com/v1.0',AUTH='https://login.microsoftonline.com/'+(CFG.msTenant||'common')+'/oauth2/v2.0/',SCOPE='Files.ReadWrite offline_access User.Read',SCOPE_SP='Files.ReadWrite.All Sites.Read.All offline_access User.Read';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const redirect=()=>new URL('./',location.href).href;
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const b64url=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const rnd=n=>b64url(crypto.getRandomValues(new Uint8Array(n)));
 class AuthError extends Error{}
+/* Mensajes de error de Microsoft explicados en claro */
+function friendly(m){m=String(m||'');const R=EL?'http://localhost':redirect(),add=t=>t+'\n\n('+m.split('\n')[0].slice(0,300)+')';
+ if(/AADSTS50194/.test(m))return add('La aplicación está registrada solo para UNA organización. En Microsoft Entra cambia «Tipos de cuenta compatibles» a «Cuentas en cualquier directorio de la organización y cuentas Microsoft personales», o escribe el identificador de tu organización en "msTenant" de build\\product.json.');
+ if(/AADSTS9002326|AADSTS9002327|AADSTS9002325/.test(m))return add('El URI de redirección está registrado con el tipo equivocado. En la web debe ser «Aplicación de página única (SPA)» con '+R+'  ·  en Windows debe estar en «Aplicaciones móviles y de escritorio» con http://localhost.');
+ if(/AADSTS50011|AADSTS500113|redirect_uri/i.test(m))return add('El URI de redirección no coincide con el registrado en Microsoft Entra. Debe estar registrado exactamente así: '+R);
+ if(/AADSTS65001|AADSTS90094|AADSTS65004|AADSTS90095|admin/i.test(m))return add('Tu organización exige que un administrador apruebe los permisos de la aplicación (Files.ReadWrite.All y Sites.Read.All para SharePoint). Pídele el «consentimiento de administrador» en Microsoft Entra > Permisos de API.');
+ if(/AADSTS700016|AADSTS700025|AADSTS7000218|AADSTS7000215|unauthorized_client|invalid_client/i.test(m))return add('Microsoft no reconoce la aplicación o no la deja actuar como cliente público. Revisa msClientId y, en Entra > Autenticación, activa «Permitir flujos de cliente público» (para Windows).');
+ if(/AADSTS70000|AADSTS70008|AADSTS700082|invalid_grant/i.test(m))return add('La sesión ha caducado. Vuelve a conectar.');
+ return m}
 /* ---------- autenticación ---------- */
 async function login(sp){
+ if(EL){const r=await plumaOD.login(!!sp);await refresh();if(!r.ok&&r.error!=='cancelado')alert('No se pudo conectar con Microsoft:\n\n'+friendly(r.error));return r.ok}
  if(!CFG.msClientId)return;
  const verifier=rnd(48),state=rnd(12),challenge=b64url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier)));
  lsSet('littera-od-pkce',{verifier,state,sp:!!sp});
@@ -23,18 +34,23 @@ async function tokenReq(body,scope){
 async function handleRedirect(){
  const q=new URLSearchParams(location.search);if(!q.get('code')&&!q.get('error'))return;
  const pk=lsGet('littera-od-pkce');history.replaceState(null,'',location.pathname);
- if(q.get('error')){window.__odMsg='No se pudo conectar con OneDrive: '+(q.get('error_description')||q.get('error'));return}
+ if(q.get('error')){window.__odMsg='No se pudo conectar con OneDrive:\n\n'+friendly(q.get('error_description')||q.get('error'));return}
  if(!pk||pk.state!==q.get('state'))return;
  try{await tokenReq({grant_type:'authorization_code',code:q.get('code'),redirect_uri:redirect(),code_verifier:pk.verifier},pk.sp?SCOPE_SP:SCOPE);localStorage.removeItem('littera-od-pkce');window.__odOpenAfter=1}
- catch(e){window.__odMsg='No se pudo conectar con OneDrive: '+e.message}}
-const hasSP=()=>/Sites\.Read\.All/.test((lsGet('littera-od-tok')||{}).sc||'');
-const connected=()=>!!(lsGet('littera-od-tok')||{}).rt||!!(lsGet('littera-od-tok')||{}).at;
-function logout(){try{localStorage.removeItem('littera-od-tok')}catch(e){}}
+ catch(e){window.__odMsg='No se pudo conectar con OneDrive:\n\n'+friendly(e.message)}}
+const hasSP=()=>EL?st.sp:/Sites\.Read\.All/.test((lsGet('littera-od-tok')||{}).sc||'');
+const connected=()=>EL?st.connected:!!(lsGet('littera-od-tok')||{}).rt||!!(lsGet('littera-od-tok')||{}).at;
+function logout(){if(EL){plumaOD.logout();st.connected=false;st.sp=false;return}try{localStorage.removeItem('littera-od-tok')}catch(e){}}
 async function token(){let t=lsGet('littera-od-tok');if(!t)throw new AuthError('no-conectado');
  if(t.exp>Date.now()+60000)return t.at;
  if(!t.rt)throw new AuthError('caducado');
  try{return (await tokenReq({grant_type:'refresh_token',refresh_token:t.rt})).at}catch(e){logout();throw new AuthError('caducado')}}
-async function g(path,opt={}){const at=await token();
+async function g(path,opt={}){
+ if(EL){const r=await plumaOD.fetch(path,{method:opt.method,headers:opt.headers,body:opt.body});
+  if(r.status===401){st.connected=false;throw new AuthError('caducado')}
+  if(r.status===0)throw new Error(r.error||'Sin conexión');
+  return{status:r.status,ok:r.status>=200&&r.status<300,headers:{get:k=>/etag/i.test(k)?r.etag:null},json:async()=>JSON.parse(r.text),text:async()=>r.text}}
+ const at=await token();
  const r=await fetch(path.startsWith('http')?path:GRAPH+path,{...opt,headers:{Authorization:'Bearer '+at,...(opt.headers||{})}});
  if(r.status===401){logout();throw new AuthError('caducado')}return r}
 const dp=d=>d?'/drives/'+d:'/me/drive';
@@ -108,6 +124,12 @@ const BTN='padding:9px 14px;border-radius:8px;border:1px solid #8a4b2a;backgroun
 const BTNP=BTN.replace('background:#fff','background:#8a4b2a').replace('color:#2b2a27','color:#fff');
 const ROW='padding:11px 12px;border-bottom:1px solid #eee;cursor:pointer';
 function close(){const o=document.querySelector('#odw');if(o)o.remove()}
+async function loginThen(sp){const ok=await login(sp);if(EL&&ok)open()}
+const overlay=h=>{const q=document.createElement('div');q.style.cssText='position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;z-index:99995;font:15px system-ui,sans-serif';q.innerHTML=WRAP(h);document.body.appendChild(q);return q};
+function askText(msg,def){return new Promise(res=>{const q=overlay(`<b>${esc(msg)}</b><input id="qi" value="${esc(def||'')}" style="padding:10px;border:1px solid #ccc;border-radius:8px;font:inherit"><div style="display:flex;gap:8px;justify-content:flex-end"><button id="qc" style="${BTN}">Cancelar</button><button id="qo" style="${BTNP}">Aceptar</button></div>`),i=q.querySelector('#qi'),end=v=>{q.remove();res(v)};
+ i.focus();i.select();q.querySelector('#qo').onclick=()=>end(i.value);q.querySelector('#qc').onclick=()=>end(null);i.onkeydown=e=>{if(e.key==='Enter')end(i.value);if(e.key==='Escape')end(null)}})}
+function pickFrom(msg,labels){return new Promise(res=>{const q=overlay(`<b>${esc(msg)}</b><div style="overflow:auto;max-height:50vh;border:1px solid #ddd8cc;border-radius:8px;background:#fff">${labels.map((t,i)=>`<div data-i="${i}" style="${ROW}">📖 ${esc(t)}</div>`).join('')}</div><div style="display:flex;justify-content:flex-end"><button id="qc" style="${BTN}">Cancelar</button></div>`),end=v=>{q.remove();res(v)};
+ q.querySelectorAll('[data-i]').forEach(e=>e.onclick=()=>end(+e.dataset.i));q.querySelector('#qc').onclick=()=>end(-1)})}
 const isProj=n=>/\.(littera|pluma)$/i.test(n);
 const HEAD=(t,extra)=>`<div style="display:flex;align-items:center;gap:8px"><b style="font-size:18px;flex:1">${t}</b>${extra||''}<button id="odx" style="${BTN};padding:5px 10px">✕</button></div>`;
 const folderPath=stack=>stack.map(s=>s.name).slice(1).join('/')||'(raíz)';
@@ -124,15 +146,17 @@ async function listSites(q){const out=new Map();
  return [...out.values()].sort((a,b)=>(a.displayName||a.name).localeCompare(b.displayName||b.name))}
 async function siteDrives(id){const r=await g('/sites/'+id+'/drives?$select=id,name,webUrl');if(!r.ok)throw new Error('SharePoint respondió '+r.status);return (await r.json()).value||[]}
 async function adopt(f,drv,parentId,folder){ // crea el registro local enlazado y abre el editor
+ if(EL){const r=await plumaOD.adopt({id:f.id,name:f.name,eTag:f.eTag},drv||null,parentId,folder);if(r&&r.ok===false)throw new Error(r.error);close();return}
  const d=JSON.parse(await download(f.id,drv)),id=P()._uid(),name=P()._clean(f.name.replace(/\.(littera|pluma)$/i,''));
  await P()._put({id,name,data:d,mtime:Date.now(),words:P()._count(d),od:{itemId:f.id,etag:f.eTag,fileName:f.name,parentId,driveId:drv||undefined,folder,dirty:0}});
  close();await P().open(id)}
 async function open(){
  const o=ui(),bind=()=>{const x=o.querySelector('#odx');if(x)x.onclick=close};
  const show=h=>{o.innerHTML=WRAP(h);bind()};
- if(!CFG.msClientId){show(`<b style="font-size:18px">OneDrive no está configurado</b><p style="margin:0">Quien publica esta web debe registrar la aplicación en Microsoft Azure y poner su identificador en <code>build\\product.json</code> (campo <code>msClientId</code>). Los pasos están en IPAD-LEEME.txt.</p><div style="text-align:right"><button id="odx" style="${BTN}">Cerrar</button></div>`);return}
+ await refresh();
+ if(!(EL?st.configured:CFG.msClientId)){show(`<b style="font-size:18px">OneDrive no está configurado</b><p style="margin:0">Quien publica esta web debe registrar la aplicación en Microsoft Azure y poner su identificador en <code>build\\product.json</code> (campo <code>msClientId</code>). Los pasos están en IPAD-LEEME.txt.</p><div style="text-align:right"><button id="odx" style="${BTN}">Cerrar</button></div>`);return}
  if(!connected()){show(`<b style="font-size:18px">☁ Conectar con Microsoft</b><p style="margin:0">Trabaja con tus proyectos <code>.littera</code> guardados en OneDrive o SharePoint: se abren desde la nube y se guardan solos cuando escribes.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button id="odx" style="${BTN}">Cancelar</button><button id="odl" style="${BTNP}">Conectar con Microsoft</button></div>`);
-  o.querySelector('#odl').onclick=()=>login(false);return}
+  o.querySelector('#odl').onclick=()=>loginThen(false);return}
  const logoutBtn=`<button id="odo" style="${BTN};padding:5px 10px;font-size:13px">Desconectar</button>`;
  const start=()=>{
   show(HEAD('☁ OneDrive y SharePoint',logoutBtn)+`<div style="display:flex;flex-direction:column;gap:8px">
@@ -145,7 +169,7 @@ async function open(){
   o.querySelector('#s3').onclick=()=>needSP(linkView)};
  const needSP=f=>{if(hasSP())return f();
   show(HEAD('🏢 Permitir SharePoint')+`<p style="margin:0">Para trabajar con archivos de SharePoint, Microsoft te pedirá un permiso adicional (leer tus sitios y editar archivos a los que tengas acceso). En algunas organizaciones lo debe aprobar el administrador de TI.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button id="b1" style="${BTN}">Volver</button><button id="b2" style="${BTNP}">Continuar</button></div>`);
-  o.querySelector('#b1').onclick=start;o.querySelector('#b2').onclick=()=>login(true)};
+  o.querySelector('#b1').onclick=start;o.querySelector('#b2').onclick=()=>loginThen(true)};
  const linkView=()=>{
   show(HEAD('🔗 Abrir desde un enlace')+`<p style="margin:0">Pega la dirección del archivo <code>.littera</code> en SharePoint (botón «Copiar vínculo» o la dirección del navegador).</p><input id="lk" placeholder="https://empresa.sharepoint.com/…/Novela.littera" style="padding:10px;border:1px solid #ccc;border-radius:8px;font:inherit"><div id="lm" style="color:#b3261e;min-height:18px"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button id="b1" style="${BTN}">Volver</button><button id="b2" style="${BTNP}">Abrir</button></div>`);
   o.querySelector('#b1').onclick=start;
@@ -181,13 +205,18 @@ async function open(){
    box.querySelectorAll('[data-d]').forEach(e=>e.onclick=()=>browse(stack.concat({id:e.dataset.d,name:e.dataset.n,drv})));
    box.querySelectorAll('[data-f]').forEach(e=>e.onclick=async()=>{const f=files.find(x=>x.id===e.dataset.f);e.textContent='Abriendo…';
     try{await adopt(f,drv,here.id,folderPath(stack.filter(s=>!s.lib)))}catch(x){e.textContent='No se pudo abrir: '+x.message}})
-  }catch(x){if(x instanceof AuthError){box.innerHTML='<div style="padding:14px">La sesión ha caducado. <a id="odre" style="color:#8a4b2a;cursor:pointer;text-decoration:underline">Vuelve a conectar</a>.</div>';box.querySelector('#odre').onclick=()=>login(hasSP())}else box.textContent='Error: '+x.message}
-  o.querySelector('#odn').onclick=async()=>{const n=prompt('Nombre del nuevo proyecto');if(!n||!n.trim())return;
-   const name=P()._clean(n),id=P()._uid(),rec={id,name,data:{bk:{tit:name}},mtime:Date.now(),words:0,od:{fileName:name+'.littera',parentId:here.id,driveId:drv||undefined,folder:folderPath(stack.filter(s=>!s.lib)),dirty:1}};
+  }catch(x){if(x instanceof AuthError){box.innerHTML='<div style="padding:14px">La sesión ha caducado. <a id="odre" style="color:#8a4b2a;cursor:pointer;text-decoration:underline">Vuelve a conectar</a>.</div>';box.querySelector('#odre').onclick=()=>loginThen(hasSP())}else box.textContent='Error: '+x.message}
+  const loc=()=>({parentId:here.id,driveId:drv||undefined,folder:folderPath(stack.filter(s=>!s.lib))});
+  o.querySelector('#odn').onclick=async()=>{const n=await askText('Nombre del nuevo proyecto');if(!n||!n.trim())return;
+   if(EL){const r=await plumaOD.newProject(n,loc());if(r&&r.ok===false)alert('No se pudo crear en la nube:\n\n'+friendly(r.error));else close();return}
+   const name=P()._clean(n),id=P()._uid(),rec={id,name,data:{bk:{tit:name}},mtime:Date.now(),words:0,od:{fileName:name+'.littera',parentId:here.id,driveId:drv||undefined,folder:loc().folder,dirty:1}};
    try{const r=await uploadTo(rec);if(r.conflict)throw new Error('conflicto');await P()._put(rec);close();await P().open(id)}catch(x){alert('No se pudo crear en la nube: '+x.message)}};
-  o.querySelector('#odu').onclick=async()=>{const l=(await P()._all()).filter(r=>!r.od);if(!l.length){alert('No hay proyectos locales para subir.');return}
-   const names=l.map((r,i)=>(i+1)+'. '+r.name).join('\n'),k=parseInt(prompt('¿Cuál subes a «'+here.name+'»? Escribe su número:\n\n'+names),10);const r0=l[k-1];if(!r0)return;
-   r0.od={fileName:r0.name+'.littera',parentId:here.id,driveId:drv||undefined,folder:folderPath(stack.filter(s=>!s.lib)),dirty:1};
+  o.querySelector('#odu').onclick=async()=>{
+   const l=EL?(await P().list()).filter(r=>!r.cloud).map(r=>({name:r.name,path:r.path})):(await P()._all()).filter(r=>!r.od).map(r=>({name:r.name,rec:r}));
+   if(!l.length){alert('No hay proyectos locales para subir.');return}
+   const k=await pickFrom('¿Qué proyecto subes a «'+here.name+'»?',l.map(x=>x.name));if(k<0)return;const it=l[k];
+   if(EL){const r=await plumaOD.push(it.path,loc());if(r&&r.ok===false)alert('No se pudo subir:\n\n'+friendly(r.error));else{alert('«'+it.name+'» ya está en la nube y seguirá sincronizado.');close();if(typeof window.load==='function')window.load()}return}
+   const r0=it.rec;r0.od={fileName:r0.name+'.littera',parentId:here.id,driveId:drv||undefined,folder:loc().folder,dirty:1};
    try{const r=await uploadTo(r0);if(r.conflict)throw new Error('conflicto');await P()._put(r0);alert('«'+r0.name+'» ya está en la nube y seguirá sincronizado.');close();if(typeof window.__reload==='function')window.__reload()}catch(x){delete r0.od;alert('No se pudo subir: '+x.message)}};
  };
  start()}

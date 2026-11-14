@@ -876,6 +876,8 @@ kSync();
 page.addEventListener('beforeinput',e=>{if(!KP.dash||e.inputType!=='insertText'||e.data!==' ')return;const s=getSelection();if(!s.isCollapsed||!s.anchorNode||s.anchorNode.nodeType!==3)return;
  const n=s.anchorNode,o=s.anchorOffset;if(o>=2&&n.data.slice(o-2,o)==='--'&&n.data[o-3]!=='-'){e.preventDefault();const r=document.createRange();r.setStart(n,o-2);r.setEnd(n,o);s.removeAllRanges();s.addRange(r);document.execCommand('insertText',false,KP.dashsp?'— ':'—')}});
 $('#bSy').onclick=()=>openThes();
+/* Windows: estado de la sincronización con OneDrive/SharePoint en el pie */
+if(window.plumaOD){let b=null;const sb=m=>{if(!m)return;if(!b){const f=document.querySelector('#foot');if(!f)return;b=document.createElement('span');b.id='odst';b.style.cssText='margin-left:12px;font-size:12px';f.appendChild(b)}b.textContent=m.text;b.title=m.text;b.style.color=m.level?'#b3261e':''};plumaOD.onBadge(sb);plumaOD.state().then(sb).catch(()=>{})}
 
 /* Gramática (LanguageTool, opcional y en línea) */
 function plainMap(){
