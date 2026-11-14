@@ -130,7 +130,7 @@ window.__focusToggle=toggleFocus;
 $("#bFoc").onclick=enterFocus;
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement)document.body.classList.remove("compose")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("compose"))exitFocus();
- if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==="f"){e.preventDefault();toggleFocus()}});
+});
 
 $("#bB").onclick=()=>{document.body.classList.toggle("showB");document.body.classList.remove("showI")};
 $("#bI").onclick=()=>{document.body.classList.toggle("showI");document.body.classList.remove("showB")};
@@ -819,12 +819,62 @@ function wordForDict(){const s=getSelection();let t=s.toString().trim();
 const DICT_BY_LANG={es:'rae',ca:'iec',en:'mw',fr:'larousse'},SYN_BY_LANG={es:'rae',ca:'jane',en:'mwt',fr:'cnrtl'};
 const KEYDICT={'1':'rae','2':'iec','3':'jane','4':'mw','5':'mwt','6':'larousse','7':'cnrtl'};
 function langForDict(){const l=docLang();return l==='all'?'es':l}
+/* Atajos de teclado personalizables + autocorrección de la raya */
+const ACT=[
+ {id:'focus',t:'Modo concentración (pantalla completa)',k:'Ctrl+Shift+F',run:()=>toggleFocus()},
+ {id:'thes',t:'Sinónimos y antónimos (sin conexión)',k:'F7',ed:1,run:()=>openThes()},
+ {id:'dict',t:'Diccionario del idioma del documento',k:'F8',ed:1,run:()=>plumaTools.dict(DICT_BY_LANG[langForDict()],wordForDict())},
+ {id:'synon',t:'Sinónimos en línea del idioma del documento',k:'Shift+F8',ed:1,run:()=>plumaTools.dict(SYN_BY_LANG[langForDict()],wordForDict())},
+ ...Object.entries(KEYDICT).map(([n,d])=>({id:'d_'+d,t:{rae:'Diccionario de la lengua española (RAE)',iec:'Diccionari de la llengua catalana (IEC)',jane:"Sinònims d'Albert Jané (IEC)",mw:'Merriam-Webster (inglés)',mwt:'Merriam-Webster Thesaurus (inglés)',larousse:'Larousse (francés)',cnrtl:'CNRTL, sinónimos en francés'}[d],k:'Alt+'+n,ed:1,run:()=>plumaTools.dict(d,wordForDict())})),
+ {id:'raya',t:'Insertar raya (—)',k:'Alt+Shift+-',ed:1,run:()=>insTxt('—')},
+ {id:'nbsp',t:'Insertar espacio duro (no se parte entre líneas)',k:'Ctrl+Shift+Space',ed:1,run:()=>insTxt(' ')},
+ {id:'ang',t:'Poner la selección entre comillas angulares «»',k:'Alt+Shift+Q',ed:1,run:()=>insTxt('«'+getSelection().toString()+'»')},
+ {id:'al_left',t:'Alinear a la izquierda',k:'Ctrl+L',ed:1,run:()=>alignSel('left')},
+ {id:'al_center',t:'Centrar',k:'Ctrl+E',ed:1,run:()=>alignSel('center')},
+ {id:'al_right',t:'Alinear a la derecha',k:'Ctrl+R',ed:1,run:()=>alignSel('right')},
+ {id:'al_justify',t:'Justificar',k:'Ctrl+J',ed:1,run:()=>alignSel('justify')}
+];
+function insTxt(t){page.focus();document.execCommand('insertText',false,t);stats();save()}
+function alignSel(k){page.focus();blks().forEach(b=>setAlign(b,k));stats();save();try{fillP()}catch(e){}}
+const KP=(()=>{let o={};try{o=JSON.parse(localStorage.getItem('littera-keys')||'{}')}catch(e){}return{keys:o.keys||{},dash:o.dash==null?1:o.dash,dashsp:o.dashsp?1:0}})();
+const kSave=()=>{try{localStorage.setItem('littera-keys',JSON.stringify(KP))}catch(e){}kSync()};
+const kOf=a=>a.id in KP.keys?KP.keys[a.id]:a.k;
+let KMAP={};
+function kSync(){KMAP={};ACT.forEach(a=>{const c=kOf(a);if(c)KMAP[c]=a.id});try{if(window.plumaTools&&plumaTools.setKeys)plumaTools.setKeys(Object.fromEntries(ACT.map(a=>[a.id,kOf(a)])))}catch(e){}}
+function comboOf(e){if(['Control','Shift','Alt','Meta','AltGraph'].includes(e.key))return'';
+ const c=e.code||'',k=/^(Key[A-Z]|Digit\d)$/.test(c)?c.slice(-1):/^Numpad\d$/.test(c)?c.slice(-1):({Minus:'-',Equal:'=',Comma:',',Period:'.',Space:'Space',Slash:'/',Backslash:'\\',Semicolon:';',Quote:"'",NumpadSubtract:'-'})[c]||(e.key.length===1?e.key.toUpperCase():e.key);
+ return[(e.ctrlKey||e.metaKey)?'Ctrl':'',e.altKey?'Alt':'',e.shiftKey?'Shift':'',k].filter(Boolean).join('+')}
+const KRES=['Ctrl+S','Ctrl+C','Ctrl+V','Ctrl+X','Ctrl+Z','Ctrl+Y','Ctrl+A','Ctrl+B','Ctrl+I','Ctrl+U','Ctrl+F','Ctrl+P','Ctrl+N','Ctrl+O','Ctrl+W','Ctrl+Q','Ctrl+T','Ctrl+Shift+Z'];
+let kCap=null;
 document.addEventListener('keydown',e=>{
- if(!window.plumaTools||view!=='ed')return;
- if(e.key==='F7'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey){e.preventDefault();openThes();return}
- if(e.key==='F7'&&e.shiftKey){e.preventDefault();openThes();return}
- if(e.key==='F8'&&!e.ctrlKey&&!e.altKey){e.preventDefault();plumaTools.dict(e.shiftKey?SYN_BY_LANG[langForDict()]:DICT_BY_LANG[langForDict()],wordForDict());return}
- if(e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&KEYDICT[e.key]){e.preventDefault();plumaTools.dict(KEYDICT[e.key],wordForDict())}});
+ if(kCap){e.preventDefault();e.stopPropagation();const m=$('#kmsg');
+  if(e.key==='Escape'){kCap=null;return keysRender()}
+  if(e.key==='Delete'||e.key==='Backspace'){KP.keys[kCap]='';kCap=null;kSave();return keysRender()}
+  const c=comboOf(e);if(!c)return;
+  if(!/\+/.test(c)&&!/^F\d+$/.test(c)){m.textContent='Usa al menos Ctrl, Alt o Mayús junto a la tecla (o una tecla F).';return}
+  if(KRES.includes(c)){m.textContent=c+' está reservado por el editor.';return}
+  const o=ACT.find(a=>a.id!==kCap&&kOf(a)===c);if(o){m.textContent=c+' ya lo usa «'+o.t+'». Quítaselo primero.';return}
+  KP.keys[kCap]=c;kCap=null;kSave();return keysRender()}
+ if(e.key==='Escape'&&document.body.classList.contains('compose'))exitFocus();
+ const id=KMAP[comboOf(e)];if(!id)return;const a=ACT.find(x=>x.id===id);
+ if(!a||(a.ed&&(view!=='ed'||!window.plumaTools)))return;e.preventDefault();e.stopPropagation();a.run()},true);
+window.__act=id=>{const a=ACT.find(x=>x.id===id);if(a&&!(a.ed&&view!=='ed'))a.run()};
+function keysRender(){const m=$('#kmod');if(!m)return;
+ m.firstChild.innerHTML=`<div class='mh'><b>Atajos de teclado</b><span style='flex:1'></span><button id='kRst'>Restablecer todos</button><button id='kX'>Cerrar</button></div>
+ <div style='padding:10px 14px;overflow:auto'><p class='hint'>Pulsa sobre una combinación y escribe la nueva (Supr la borra, Esc cancela). Se guardan en este equipo.</p><p id='kmsg' class='hint' style='color:#b3261e;min-height:1.2em'></p>
+ <table style='width:100%;border-collapse:collapse'>${ACT.map(a=>`<tr><td style='padding:4px 6px;border-bottom:1px solid var(--ln)'>${esc(a.t)}</td><td style='padding:4px 6px;border-bottom:1px solid var(--ln);white-space:nowrap;text-align:right'><button data-k='${a.id}' style='min-width:130px'>${kCap===a.id?'Pulsa la combinación…':esc(kOf(a)||'—')}</button> <button data-r='${a.id}' title='Valor por defecto'>↺</button></td></tr>`).join('')}</table>
+ <p><b>Escritura</b></p><label class='ck'><input type='checkbox' id='kDash' ${KP.dash?'checked':''}> Al escribir «-- » (dos guiones y espacio) poner una raya (—)</label><br><label class='ck'><input type='checkbox' id='kDsp' ${KP.dashsp?'checked':''}> Dejar un espacio después de la raya (si no, «—Hola» como en los diálogos)</label></div>`;
+ m.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{kCap=b.dataset.k;keysRender()});
+ m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{delete KP.keys[b.dataset.r];kCap=null;kSave();keysRender()});
+ $('#kRst').onclick=()=>{KP.keys={};kCap=null;kSave();keysRender()};$('#kX').onclick=()=>{kCap=null;m.remove()};
+ $('#kDash').onchange=e=>{KP.dash=e.target.checked?1:0;kSave()};$('#kDsp').onchange=e=>{KP.dashsp=e.target.checked?1:0;kSave()}}
+function keysOpen(){if($('#kmod'))return;const m=document.createElement('div');m.id='kmod';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px';
+ m.innerHTML=`<div style='background:var(--pn);color:var(--tx);border-radius:10px;width:min(680px,100%);max-height:90%;display:flex;flex-direction:column'></div>`;m.onclick=e=>{if(e.target===m){kCap=null;m.remove()}};document.body.appendChild(m);keysRender()}
+window.__keysOpen=keysOpen;
+if($('#bKeys'))$('#bKeys').onclick=keysOpen;
+kSync();
+page.addEventListener('beforeinput',e=>{if(!KP.dash||e.inputType!=='insertText'||e.data!==' ')return;const s=getSelection();if(!s.isCollapsed||!s.anchorNode||s.anchorNode.nodeType!==3)return;
+ const n=s.anchorNode,o=s.anchorOffset;if(o>=2&&n.data.slice(o-2,o)==='--'&&n.data[o-3]!=='-'){e.preventDefault();const r=document.createRange();r.setStart(n,o-2);r.setEnd(n,o);s.removeAllRanges();s.addRange(r);document.execCommand('insertText',false,KP.dashsp?'— ':'—')}});
 $('#bSy').onclick=()=>openThes();
 
 /* Gramática (LanguageTool, opcional y en línea) */
