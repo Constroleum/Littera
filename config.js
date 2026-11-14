@@ -1,0 +1,1 @@
+window.LITTERA_CFG={"seller":"Littera","buyUrl":"","supportEmail":"","trialDays":14,"msClientId":"","publicKey":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA7bnhXqCYt624xaQSGAfO4/GvVsr6HFCmZDqH4SXs9e8=\n-----END PUBLIC KEY-----\n"};

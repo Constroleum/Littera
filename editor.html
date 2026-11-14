@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es"><head><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="theme-color" content="#0a1236"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name='apple-mobile-web-app-capable' content='yes'><meta name='mobile-web-app-capable' content='yes'><meta name='apple-mobile-web-app-title' content='Littera'><meta name='apple-mobile-web-app-status-bar-style' content='default'>
+<title>Littera — escritura por proyectos</title>
+<link rel="stylesheet" href="fonts/fonts.css"><script src="themes.js"></script><script src="hyph.js"></script>
+<style>
+:root{--bg:#ece9e2;--pn:#fbfaf7;--ln:#ddd8cc;--tx:#2b2a27;--mu:#807b6f;--ac:#8a4b2a;--ah:#f0e3d8;--paper:#fff;--ink:#222;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171614;--pn:#22201e;--ln:#38352f;--tx:#e8e4da;--mu:#9a9588;--ac:#e0a67c;--ah:#3a2e25;--paper:#2a2825;--ink:#e8e4da}}
+:root[data-theme="dark"]{--bg:#171614;--pn:#22201e;--ln:#38352f;--tx:#e8e4da;--mu:#9a9588;--ac:#e0a67c;--ah:#3a2e25;--paper:#2a2825;--ink:#e8e4da}
+html,body{height:100%;margin:0}
+body{font:14px system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;overflow:hidden}
+button,select,input,textarea{font:inherit;color:var(--tx)}
+button{background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 8px;cursor:pointer;min-width:28px}
+button:hover{background:var(--ah)}button.on{background:var(--ah);border-color:var(--ac);color:var(--ac)}
+select,input[type=text],textarea{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:4px 6px}
+#top{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--ln);background:var(--pn);flex-wrap:wrap}
+#top b{color:var(--ac);font-family:Georgia,serif;font-size:17px;margin-right:6px}
+.sp{flex:1}
+#main{flex:1;display:flex;min-height:0;position:relative}
+#bin,#ins{background:var(--pn);display:flex;flex-direction:column;flex-shrink:0}
+#bin{width:260px;border-right:1px solid var(--ln)}#ins{width:250px;border-left:1px solid var(--ln);padding:10px;gap:8px;overflow:auto}
+#bin .h{display:flex;gap:2px;padding:6px;border-bottom:1px solid var(--ln);flex-wrap:wrap}
+#tree{flex:1;overflow:auto;padding:6px 0}
+.it{display:flex;align-items:center;gap:4px;padding:5px 8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid transparent}
+.it:hover{background:var(--ah)}.it.sel{background:var(--ah);border-left-color:var(--ac);font-weight:600}.it.drop{outline:2px dashed var(--ac)}
+.it .c{width:14px;color:var(--mu)}
+#ctr{flex:1;display:flex;flex-direction:column;min-width:0}
+#tb{display:flex;gap:3px;padding:6px 10px;border-bottom:1px solid var(--ln);background:var(--pn);overflow-x:auto;align-items:center;flex-shrink:0}
+#tb .g{display:flex;gap:2px;padding-right:6px;margin-right:2px;border-right:1px solid var(--ln);align-items:center}
+#tb input[type=color]{width:26px;height:26px;padding:0;border:1px solid var(--ln);background:none}
+#scroll{flex:1;overflow:auto;padding:22px 12px}
+#ttl{display:block;max-width:780px;margin:0 auto 10px;width:100%;box-sizing:border-box;font:600 22px Georgia,serif;background:transparent;border:0;border-bottom:1px solid var(--ln);border-radius:0;padding:6px 2px}
+#page{max-width:780px;margin:0 auto;background:var(--paper);color:var(--ink);min-height:70%;padding:56px 64px;box-sizing:border-box;box-shadow:0 2px 14px rgba(0,0,0,.14);outline:none;font:17px/1.6 Georgia,serif;overflow-wrap:anywhere}
+#page h1{font-size:2em;margin:.6em 0 .3em}#page h2{font-size:1.5em}#page h3{font-size:1.2em}
+#page blockquote{border-left:3px solid var(--ac);margin:1em 0;padding:.1em 1em;color:var(--mu);font-style:italic}
+#page table{border-collapse:collapse;width:100%}#page td,#page th{border:1px solid var(--mu);padding:6px 8px}
+#page img{max-width:100%}#page a{color:var(--ac)}
+#cork{flex:1;overflow:auto;padding:18px;display:none;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;align-content:start}
+.card{background:var(--paper);color:var(--ink);border:1px solid var(--ln);border-top:4px solid var(--ac);border-radius:4px;padding:10px;box-shadow:0 2px 6px rgba(0,0,0,.12);display:flex;flex-direction:column;gap:6px;min-height:150px;cursor:pointer}
+.card.sel{outline:2px solid var(--ac)}.card b{font-family:Georgia,serif}
+.card textarea{flex:1;resize:none;border:0;background:transparent;color:inherit;min-height:80px}
+.card small{color:var(--mu)}
+#foot{display:flex;gap:14px;padding:5px 12px;border-top:1px solid var(--ln);background:var(--pn);color:var(--mu);font-size:12px;align-items:center;flex-wrap:wrap}
+#bar{height:5px;width:90px;background:var(--ln);border-radius:3px;overflow:hidden}#bar i{display:block;height:100%;background:var(--ac);width:0}
+#ins label{font-size:12px;color:var(--mu);display:block;margin-bottom:2px}#ins textarea{width:100%;box-sizing:border-box;min-height:110px;resize:vertical}#ins input,#ins select{width:100%;box-sizing:border-box}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal>div{background:var(--pn);border-radius:10px;width:min(820px,100%);max-height:88%;display:flex;flex-direction:column}
+#modal .mh{display:flex;gap:6px;padding:10px;border-bottom:1px solid var(--ln);align-items:center}
+#out{overflow:auto;padding:24px 36px;font:16px/1.6 Georgia,serif;background:var(--paper);color:var(--ink);border-radius:0 0 10px 10px}
+.compose #bin,.compose #ins,.compose #tb,.compose #top,.compose #foot{display:none}
+.compose #page{box-shadow:none;background:transparent}.compose #scroll{padding-top:6vh}
+#meta{display:flex;flex-direction:column;gap:4px;padding-bottom:8px;border-bottom:1px solid var(--ln)}#meta:empty{display:none}#meta label{font-size:12px;color:var(--mu);margin-top:4px}#meta textarea{min-height:60px;width:100%;box-sizing:border-box;resize:vertical}#meta input[type=text],#meta select{width:100%;box-sizing:border-box}
+.chips{display:flex;flex-wrap:wrap;gap:4px}.chips a{background:var(--ah);color:var(--ac);padding:2px 8px;border-radius:10px;cursor:pointer;font-size:12px}#meta .chk{display:flex;align-items:center;gap:3px;margin:0;font-size:12px;color:var(--tx);background:var(--bg);padding:2px 6px;border-radius:10px}#meta .chk input{width:auto}
+#tb2{display:flex;gap:8px;padding:4px 10px;border-bottom:1px solid var(--ln);background:var(--pn);overflow-x:auto;align-items:flex-end;flex-shrink:0;font-size:12px}#tb2 label,#bkb label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:2px;margin:2px 0;white-space:nowrap}#tb2 input[type=number]{width:58px}#tb2 .ck,#bkb .ck{flex-direction:row;align-items:center;gap:5px}
+.dc:first-letter{float:left;font-size:3.4em;line-height:.85;padding:2px 6px 0 0;font-weight:700}.compose #tb2{display:none}
+#bm{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:60;padding:12px}#bm>div{background:var(--pn);border-radius:10px;width:min(800px,100%);max-height:92%;display:flex;flex-direction:column}#bm .mh{display:flex;gap:6px;padding:10px;border-bottom:1px solid var(--ln);align-items:center;flex-wrap:wrap}#bkb{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:6px}#bkb label{white-space:normal}#bkb input[type=text],#bkb input[type=number],#bkb select{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:5px 6px;width:100%;box-sizing:border-box}#bkb input[type=color]{width:100%;height:30px;padding:0}#bkb .ck input{width:auto}
+.bg2{display:flex;gap:20px;flex-wrap:wrap}.bg2>div:first-child{flex:1;min-width:240px}.row,.row3{display:flex;gap:8px}.row>*,.row3>*{flex:1}.hint{color:var(--mu);font-size:12px;margin:0}#bkb .big{border:1px solid var(--ac);color:var(--ac);padding:10px;font-weight:600}#bkb b{margin-top:8px}
+#cvp{width:190px;height:285px;padding:22px 16px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 3px 14px rgba(0,0,0,.3);overflow:hidden}
+html{-webkit-text-size-adjust:100%}body{-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+@media(pointer:coarse){button{min-height:38px;min-width:38px}select,input:not(#ttl):not([type=checkbox]),textarea{font-size:16px!important;min-height:38px}#tb2 input[type=number]{width:64px}.it{padding:12px 10px}#tb,#tb2{padding-top:8px;padding-bottom:8px}#tb input[type=color]{width:38px;height:38px}input[type=checkbox]{width:22px;height:22px}.card{min-height:170px}}
+@media(max-width:900px){#bin,#ins{width:min(330px,84vw)}}
+.mb{display:none}
+@media(max-width:900px){
+ #bin,#ins{position:absolute;top:0;bottom:0;z-index:20;display:none;box-shadow:0 0 20px rgba(0,0,0,.3)}
+ #bin{left:0}#ins{right:0}.showB #bin,.showI #ins{display:flex}.mb{display:inline-block}
+ #page{padding:28px 20px}}
+#page{max-width:none!important}
+#tb2>*{flex-shrink:0}#sPp{width:170px}#sZm{width:130px}
+#tp{position:fixed;right:14px;top:92px;width:330px;max-height:calc(100vh - 150px);display:flex;flex-direction:column;background:var(--pn);border:1px solid var(--ln);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:40}
+#tp[hidden],#cm[hidden]{display:none}
+.tph{display:flex;gap:2px;padding:6px;border-bottom:1px solid var(--ln)}
+#tpb{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+#tpb .row{display:flex;gap:6px}#tpb .row input,#tpb .row select{flex:1}
+#tpb h4{margin:6px 0 2px;font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+#tpb .chips{display:flex;flex-wrap:wrap;gap:4px}
+#tpb .chip{border:1px solid var(--ln);background:var(--paper);border-radius:14px;padding:2px 9px}
+#tpb .chip:hover{background:var(--ah);border-color:var(--ac)}#tpb .chip.ant{border-style:dashed}
+#tpb small{color:var(--mu)}
+.gi{border:1px solid var(--ln);border-radius:8px;padding:8px;cursor:pointer}.gi:hover{border-color:var(--ac)}.gi mark{background:#fde68a;color:#000;padding:0 2px;border-radius:3px}
+#cm{position:fixed;z-index:60;min-width:210px;background:var(--pn);border:1px solid var(--ln);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.28);padding:4px}
+#cm div{padding:5px 14px;cursor:pointer;border-radius:5px;white-space:nowrap}#cm div:hover{background:var(--ah)}#cm div.b{font-weight:700}#cm div.d{color:var(--mu);cursor:default}#cm div.d:hover{background:none}
+#cm hr{border:0;border-top:1px solid var(--ln);margin:4px 0}
+::highlight(typo){text-decoration:underline wavy #e03131;text-decoration-thickness:1.5px;text-underline-offset:2px}
+::highlight(gram){text-decoration:underline wavy #2f6fed;text-decoration-thickness:1.5px;text-underline-offset:2px}
+@media print{body>*:not(#modal){display:none!important}#modal{position:static;background:none;display:block!important}#modal .mh{display:none}}
+#top img.lg{width:24px;height:24px;margin-right:2px}
+#page{font-family:var(--ff,"Times New Roman",serif);font-size:calc(var(--fs,11.5)*1pt);line-height:var(--lh,1.4)}
+#page p{margin:calc(var(--psb,0)*1pt) 0 calc(var(--psa,6)*1pt);text-indent:calc(var(--fli,0)*1cm)}
+#page.jus p,#page.jus li{text-align:justify}
+#page.jus.hyp p,#page.jus.hyp li,#out.jus.hyp p,#out.jus.hyp li{hyphens:auto}
+#page li{margin:0 0 calc(var(--psa,6)*.4pt)}
+#page.marks p::after,#page.marks h1::after,#page.marks h2::after,#page.marks h3::after,#page.marks li::after,#page.marks blockquote::after{content:"¶";color:#6aa3c8;margin-left:2px}
+#page img{cursor:pointer;max-width:100%}#out img{max-width:100%}
+#out{font-family:var(--ff,Georgia,serif);font-size:calc(var(--fs,11.5)*1pt);line-height:var(--lh,1.4)}#out p{margin:calc(var(--psb,0)*1pt) 0 calc(var(--psa,6)*1pt);text-indent:calc(var(--fli,0)*1cm)}#out.jus p,#out.jus li{text-align:justify}#out li{margin:0 0 calc(var(--psa,6)*.4pt)}
+#ibx{position:fixed;border:2px solid var(--ac);pointer-events:none;z-index:30;box-sizing:border-box}
+#ib{position:fixed;z-index:45;display:flex;gap:2px;align-items:center;background:var(--pn);border:1px solid var(--ln);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);padding:3px;font-size:12px}#ib input{width:52px}#ibx[hidden],#ib[hidden]{display:none}
+#pg{position:fixed;right:14px;top:92px;width:340px;max-height:calc(100vh - 150px);display:flex;flex-direction:column;background:var(--pn);border:1px solid var(--ln);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:40}#pg[hidden]{display:none}
+#pgb{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}#pgb h4{margin:6px 0 2px;font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+#pgb label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:2px;flex:1}#pgb label.ck{flex-direction:row;align-items:center;gap:6px;color:var(--tx);flex:none}
+#pgb .row{display:flex;gap:8px;align-items:flex-end}#pgb input[type=number],#pgb select{width:100%;box-sizing:border-box}#pgb input[type=color]{width:100%;height:28px;padding:0}
+#pgb .chips{display:flex;gap:4px;flex-wrap:wrap}#pgb .chips button{border:1px solid var(--ln);min-width:34px}
+#copt{display:flex;gap:10px;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--ln)}#copt .row{display:flex;gap:10px;flex-wrap:wrap;width:100%}#copt label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:2px;flex:1;min-width:190px}
+#bkb details{margin-top:6px}#bkb summary{cursor:pointer;color:var(--mu)}
+#cvp{position:relative}
+</style></head><body>
+<div id="top">
+ <button class="mb" id="bB">☰</button><img class="lg" src="assets/logo-64.png" alt=""><b>Littera</b>
+ <button data-v="ed" class="on">Escritura</button><button data-v="ck">Tablón</button><button data-v="lc">Lienzo</button>
+ <span class="sp"></span>
+ <button id="bBook">Libro y exportar</button><button id="bComp">Compilar</button><button id="bFoc">Sin distracciones</button><select id="sTheme" title="Tema de color"></select><button class="mb" id="bI">Inspector</button>
+</div>
+<div id="main">
+ <aside id="bin">
+  <div class="h"><button id="aD" title="Nueva escena">+ Escena</button><button id="aS" title="Nueva sección">+ Sección</button><button id="aC" title="Nueva ficha de personaje">+ Personaje</button><button id="aL" title="Nueva ficha de escenario">+ Escenario</button><button id="aF" title="Nueva carpeta">+ Carpeta</button><button id="aU" title="Subir">↑</button><button id="aN" title="Bajar">↓</button><button id="aR" title="Renombrar">✎</button><button id="aX" title="Eliminar">🗑</button></div>
+  <div id="tree"></div>
+ </aside>
+ <section id="ctr">
+  <div id="tb">
+   <div class="g"><button data-c="undo" title="Deshacer">↶</button><button data-c="redo" title="Rehacer">↷</button></div>
+   <div class="g"><select id="sBlk" title="Estilo"><option value="p">Párrafo</option><option value="h1">Título 1</option><option value="h2">Título 2</option><option value="h3">Título 3</option><option value="blockquote">Cita</option></select>
+   <select id="sFont" title="Fuente"><optgroup label="Windows"><option value="Georgia" style="font-family:'Georgia'">Georgia</option><option value="Times New Roman" style="font-family:'Times New Roman'">Times New Roman</option><option value="Garamond" style="font-family:'Garamond'">Garamond</option><option value="Cambria" style="font-family:'Cambria'">Cambria</option><option value="Palatino Linotype" style="font-family:'Palatino Linotype'">Palatino Linotype</option><option value="Book Antiqua" style="font-family:'Book Antiqua'">Book Antiqua</option><option value="Arial" style="font-family:'Arial'">Arial</option><option value="Calibri" style="font-family:'Calibri'">Calibri</option><option value="Verdana" style="font-family:'Verdana'">Verdana</option><option value="Tahoma" style="font-family:'Tahoma'">Tahoma</option><option value="Trebuchet MS" style="font-family:'Trebuchet MS'">Trebuchet MS</option><option value="Segoe UI" style="font-family:'Segoe UI'">Segoe UI</option><option value="Century Gothic" style="font-family:'Century Gothic'">Century Gothic</option><option value="Courier New" style="font-family:'Courier New'">Courier New</option><option value="Consolas" style="font-family:'Consolas'">Consolas</option></optgroup><optgroup label="Incluidas en Littera"><option value="EB Garamond" style="font-family:'EB Garamond'">EB Garamond</option><option value="Cormorant Garamond" style="font-family:'Cormorant Garamond'">Cormorant Garamond</option><option value="Lora" style="font-family:'Lora'">Lora</option><option value="Merriweather" style="font-family:'Merriweather'">Merriweather</option><option value="Libre Baskerville" style="font-family:'Libre Baskerville'">Libre Baskerville</option><option value="Crimson Pro" style="font-family:'Crimson Pro'">Crimson Pro</option><option value="Playfair Display" style="font-family:'Playfair Display'">Playfair Display</option><option value="Source Serif 4" style="font-family:'Source Serif 4'">Source Serif 4</option><option value="Open Sans" style="font-family:'Open Sans'">Open Sans</option><option value="Lato" style="font-family:'Lato'">Lato</option><option value="Montserrat" style="font-family:'Montserrat'">Montserrat</option><option value="Roboto" style="font-family:'Roboto'">Roboto</option><option value="Nunito" style="font-family:'Nunito'">Nunito</option><option value="Source Sans 3" style="font-family:'Source Sans 3'">Source Sans 3</option><option value="Courier Prime" style="font-family:'Courier Prime'">Courier Prime</option><option value="Special Elite" style="font-family:'Special Elite'">Special Elite</option><option value="Caveat" style="font-family:'Caveat'">Caveat</option></optgroup></select>
+   <select id="sSize" title="Tamaño (pt)"></select></div>
+   <div class="g"><button data-c="bold"><b>N</b></button><button data-c="italic"><i>K</i></button><button data-c="underline"><u>S</u></button><button data-c="strikeThrough"><s>T</s></button><button data-c="superscript">x²</button><button data-c="subscript">x₂</button>
+   <input type="color" id="cFg" value="#c0392b" title="Color de texto"><input type="color" id="cBg" value="#fff176" title="Resaltado"></div>
+   <div class="g"><button data-c="justifyLeft">⇤</button><button data-c="justifyCenter">↔</button><button data-c="justifyRight">⇥</button><button data-c="justifyFull">☰</button>
+   <select id="sLh" title="Interlineado de los párrafos seleccionados"></select><button id="bPg" title="Formato de párrafo (todas las opciones)">¶ Párrafo…</button></div>
+   <div class="g"><button data-c="insertUnorderedList">• Lista</button><button data-c="insertOrderedList">1. Lista</button><select id="sLs" title="Estilo de lista"></select><button data-c="outdent">⇠</button><button data-c="indent">⇢</button></div>
+   <div class="g"><button id="bLink">Enlace</button><button id="bTab">Tabla</button><button id="bImg">Imagen</button><button data-c="insertHorizontalRule">―</button><button data-c="removeFormat">Tx</button></div>
+   <input type="file" id="fImg" accept="image/*" hidden>
+  </div>
+  <div id='tb2'><select id='sPp' title='Tamaño del papel'></select><select id='sZm' title='Zoom'><option value='fit'>Ajustar al ancho</option><option value='50'>50%</option><option value='75'>75%</option><option value='100'>100%</option><option value='125'>125%</option><option value='150'>150%</option></select><button id='bSy' title='Sinónimos y antónimos (Mayús+F7)'>Sinónimos</button><button id='bGr' title='Revisión gramatical (en línea)'>Gramática</button><select id='sLg' title='Idioma de corrección ortográfica'><option value='es'>Castellano</option><option value='ca'>Català</option><option value='en'>English</option><option value='fr'>Français</option><option value='all'>Todos los idiomas</option></select><select id='sBk' title='Estilo de libro'><option value=''>Estilo de libro…</option><option>Párrafo normal</option><option>Texto de novela</option><option>Capítulo</option><option>Subtítulo</option><option>Epígrafe</option><option>Verso</option><option>Separador de escena</option></select><label>1.ª línea (cm)<input data-p='textIndent' type='number' step='.25'></label><label>Izq. (cm)<input data-p='marginLeft' type='number' step='.25' min='0'></label><label>Der. (cm)<input data-p='marginRight' type='number' step='.25' min='0'></label><label>Antes (pt)<input data-p='marginTop' type='number' step='1' min='0'></label><label>Después (pt)<input data-p='marginBottom' type='number' step='1' min='0'></label><label>Interl.<input data-p='lineHeight' type='number' step='.05' min='.8' max='4'></label><button id='bPg2' title='Formato de párrafo (todas las opciones)'>¶ Párrafo…</button><button id='bMk' title='Mostrar marcas de párrafo'>¶</button></div>
+  <div id="scroll"><input id="ttl" type="text" aria-label="Título"><div id="page" contenteditable="true" spellcheck="true"></div></div>
+  <div id="cork"></div>
+  <div id="lienzo"></div>
+ </section>
+ <aside id="ins">
+  <div id="meta"></div>
+  <div><label>Sinopsis</label><textarea id="iSyn" placeholder="Resumen en una frase…"></textarea></div>
+  <div><label>Estado</label><select id="iSt"><option>Borrador</option><option>Revisión</option><option>Final</option><option>Pendiente</option></select></div>
+  <div><label class="chk" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="iNc" style="width:auto">Excluir al compilar</label></div>
+  <div><label>Notas</label><textarea id="iNo" placeholder="Notas del documento…"></textarea></div>
+  <div><label>Objetivo del proyecto (palabras)</label><input id="iTg" type="number" min="0" step="100"></div>
+ </aside>
+</div>
+<div id="foot"><span id="wc"></span><span id="tw"></span><div id="bar"><i></i></div><span class="sp"></span><span id="sv">Guardado</span></div>
+<div id="tp" hidden><div class="tph"><button data-t="th" class="on">Sinónimos</button><button data-t="gr">Gramática</button><span class="sp"></span><button id="tpx" title="Cerrar">✕</button></div><div id="tpb"></div></div>
+<div id="pg" hidden><div class="tph"><b style="padding:4px 8px">Formato de párrafo</b><span class="sp"></span><button id="pgx" title="Cerrar">✕</button></div><div id="pgb"></div></div>
+<div id="cm" hidden></div>
+<div id="modal"><div><div class="mh"><b>Manuscrito compilado</b><span class="sp"></span><span id="mSt" style="font-size:12px;color:var(--mu);margin-right:8px"></span><button id="mCp">Copiar todo</button><button id="mPr" title="Genera el PDF con la misma maquetación que «Libro y exportar»">Guardar PDF</button><button id="mWd">Guardar Word</button><button id="mCl">Cerrar</button></div><div id="copt"></div><div id="out"></div></div></div>
+<script src='lib/jspdf.umd.min.js'></script><script src='lib/jszip.min.js'></script>
+<script>window.__LITTERA_EDITOR=1</script><script src='config.js'></script><script src='shim.js'></script><script src='onedrive.js'></script></body></html>
