@@ -55,7 +55,8 @@ function renderCork(){
   d.querySelector("textarea").oninput=e=>{x.s=e.target.value;if(x.id===S.sel)$("#iSyn").value=x.s;save()};
   d.onclick=()=>{S.sel=x.id;$$(".card").forEach(k=>k.classList.remove("sel"));d.classList.add("sel");renderTree()};
   d.ondblclick=()=>{setView("ed");select(x.id)};c.appendChild(d)})}
-function setView(v){view=v;$("#scroll").style.display=v==="ed"?"":"none";$("#tb").style.display=v==="ed"?"":"none";$("#tb2").style.display=v==="ed"?"":"none";
+function setInsMax(on){document.body.classList.toggle("insMax",!!on);const b=$("#insMax");if(b)b.textContent=on?"⤡ Reducir ficha":"⤢ Ampliar ficha";if(on)document.body.classList.add("showI")}
+function setView(v){if(v!=="ed"&&document.body.classList.contains("insMax"))setInsMax(0);view=v;$("#scroll").style.display=v==="ed"?"":"none";$("#tb").style.display=v==="ed"?"":"none";$("#tb2").style.display=v==="ed"?"":"none";
  $("#cork").style.display=v==="ck"?"grid":"none";$("#lienzo").style.display=v==="lc"?"flex":"none";if(v==="lc"&&window.__LC)window.__LC.show();$$("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===v));if(v==="ck")renderCork()}
 $$("[data-v]").forEach(b=>b.onclick=()=>setView(b.dataset.v));
 const ICON={f:"📁",d:"📄",s:"§",c:"🎭",l:"🏞"},NAMES={f:"Nueva carpeta",d:"Nueva escena",s:"Nueva sección",c:"Nuevo personaje",l:"Nuevo escenario"},ROOT={c:"Personajes",l:"Escenarios"};
@@ -81,6 +82,10 @@ function renderMeta(){const i=cur(),box=$("#meta"),fs=F[i.k];box.innerHTML="";if
  box.querySelectorAll("[data-m]").forEach(el=>{el.oninput=el.onchange=()=>{m[el.dataset.m]=el.value;save()}});
  box.querySelectorAll("[data-pr]").forEach(el=>el.onchange=()=>{m.pr=[...box.querySelectorAll("[data-pr]")].filter(x=>x.checked).map(x=>x.dataset.pr);save()});
  box.querySelectorAll("[data-go]").forEach(a=>a.onclick=()=>select(a.dataset.go))}
+function setFichaF(on){document.body.classList.toggle("fichaF",!!on);const b=$("#insMax");if(b)b.textContent=on?"⤡ Volver al texto":(document.body.classList.contains("insMax")?"⤡ Reducir ficha":"⤢ Ampliar ficha");
+ if(on){const f=$("#fsel");f.innerHTML=S.items.filter(x=>F[x.k]).map(x=>`<option value="${x.id}"${x.id===S.sel?" selected":""}>${{c:"🎭",l:"🏞",d:"📄",s:"📄"}[x.k]||""} ${esc(x.t)}</option>`).join("");f.onchange=()=>{select(f.value)}}else if(view!=="lc")page.focus()}
+$("#fbt").onclick=()=>setFichaF(!document.body.classList.contains("fichaF"));
+$("#insMax").onclick=()=>{if(document.body.classList.contains("compose"))setFichaF(!document.body.classList.contains("fichaF"));else setInsMax(!document.body.classList.contains("insMax"))};
 $("#aR").onclick=()=>{$("#ttl").focus();$("#ttl").select()};
 $("#aX").onclick=()=>{const i=cur();if(S.items.length<2||!confirm("¿Eliminar «"+i.t+"» y todo su contenido?"))return;
  const ids=[i.id];(function f(p){kids(p).forEach(k=>{ids.push(k.id);f(k.id)})})(i.id);
@@ -121,15 +126,15 @@ page.addEventListener("keydown",e=>{
 /* Modo concentración: sin distracciones y a pantalla completa (Ctrl+Mayús+F; Esc para salir) */
 function focusToast(t){let d=document.getElementById('fcT');if(!d){d=document.createElement('div');d.id='fcT';d.style.cssText='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#000b;color:#fff;padding:8px 16px;border-radius:20px;font:14px system-ui;z-index:9999;transition:opacity .6s;pointer-events:none';document.body.appendChild(d)}
  d.textContent=t;d.style.opacity=1;clearTimeout(d._t);d._t=setTimeout(()=>d.style.opacity=0,2600)}
-function enterFocus(){document.body.classList.add("compose");if(view!=="lc")setView("ed");
+function enterFocus(){setInsMax(0);document.body.classList.add("compose");if(view!=="lc")setView("ed");
  try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
  focusToast('Modo concentración · Esc para salir');if(view!=="lc")page.focus();else if(window.__LC)setTimeout(()=>window.__LC.refresh(),80)}
-function exitFocus(){document.body.classList.remove("compose");try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}}
+function exitFocus(){document.body.classList.remove("compose","fichaF");setInsMax(document.body.classList.contains("insMax"));try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}}
 const toggleFocus=()=>document.body.classList.contains("compose")?exitFocus():enterFocus();
 window.__focusToggle=toggleFocus;
 $("#bFoc").onclick=enterFocus;
-document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement)document.body.classList.remove("compose")});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("compose")&&!(view==="lc"&&window.__LC&&window.__LC.busy&&window.__LC.busy()))exitFocus();
+document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement)document.body.classList.remove("compose","fichaF")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("fichaF")){setFichaF(0);return}if(e.key==="Escape"&&document.body.classList.contains("compose")&&!(view==="lc"&&window.__LC&&window.__LC.busy&&window.__LC.busy()))exitFocus();
 });
 
 $("#bB").onclick=()=>{document.body.classList.toggle("showB");document.body.classList.remove("showI")};
@@ -788,6 +793,7 @@ const ONL={ca:{k:'jane',t:"Diccionari de sinònims d'Albert Jané (IEC)",x:'con 
 const onlineBox=lang=>{const o=ONL[lang];if(!o)return'';const on=navigator.onLine;return `<h4>${esc(o.t)}</h4>${on?`<button class="chip" id="thj" data-k="${o.k}" style="border-radius:8px">Consultar «${esc(thWord)}» en línea ↗</button><div><small>Se abre ${o.x}. Necesita internet.</small></div>`:'<small>Sin conexión: este diccionario solo está disponible con internet. Los sinónimos y antónimos incluidos en Littera funcionan sin conexión.</small>'}`};
 const janeHook=box=>{const j=box.querySelector('#thj');if(j)j.onclick=()=>plumaTools.dict(j.dataset.k,thWord)};
 function extraDictItems(w){const l=docLang(),all=l==='all',o=[];
+ if(l==='ca'||l==='es'||all){o.push({t:`Catalán → castellano: «${w}» (en línea)`,f:()=>plumaTools.dict('caes',w)});o.push({t:`Castellano → catalán: «${w}» (en línea)`,f:()=>plumaTools.dict('esca',w)})}
  if(l==='ca'||all)o.push({t:`Sinònims de «${w}» en Albert Jané (en línea)`,f:()=>plumaTools.dict('jane',w)});
  if(l==='en'||all){o.push({t:`Merriam-Webster: «${w}» (en línea)`,f:()=>plumaTools.dict('mw',w)});o.push({t:`Merriam-Webster Thesaurus: «${w}»`,f:()=>plumaTools.dict('mwt',w)})}
  if(l==='fr'||all){o.push({t:`Larousse: «${w}» (en línea)`,f:()=>plumaTools.dict('larousse',w)});o.push({t:`CNRTL sinónimos: «${w}»`,f:()=>plumaTools.dict('cnrtl',w)})}
@@ -817,7 +823,7 @@ function wordForDict(){const s=getSelection();let t=s.toString().trim();
  if(!t&&s.rangeCount&&s.isCollapsed){const k=tokenAt(s.anchorNode,s.anchorOffset);if(k)t=k.w}
  return t.length<80&&!/\n/.test(t)?t:''}
 const DICT_BY_LANG={es:'rae',ca:'iec',en:'mw',fr:'larousse'},SYN_BY_LANG={es:'rae',ca:'jane',en:'mwt',fr:'cnrtl'};
-const KEYDICT={'1':'rae','2':'iec','3':'jane','4':'mw','5':'mwt','6':'larousse','7':'cnrtl'};
+const KEYDICT={'1':'rae','2':'iec','3':'jane','4':'mw','5':'mwt','6':'larousse','7':'cnrtl','8':'caes','9':'esca'};
 function langForDict(){const l=docLang();return l==='all'?'es':l}
 /* Atajos de teclado personalizables + autocorrección de la raya */
 const ACT=[
@@ -825,7 +831,7 @@ const ACT=[
  {id:'thes',t:'Sinónimos y antónimos (sin conexión)',k:'F7',ed:1,run:()=>openThes()},
  {id:'dict',t:'Diccionario del idioma del documento',k:'F8',ed:1,run:()=>plumaTools.dict(DICT_BY_LANG[langForDict()],wordForDict())},
  {id:'synon',t:'Sinónimos en línea del idioma del documento',k:'Shift+F8',ed:1,run:()=>plumaTools.dict(SYN_BY_LANG[langForDict()],wordForDict())},
- ...Object.entries(KEYDICT).map(([n,d])=>({id:'d_'+d,t:{rae:'Diccionario de la lengua española (RAE)',iec:'Diccionari de la llengua catalana (IEC)',jane:"Sinònims d'Albert Jané (IEC)",mw:'Merriam-Webster (inglés)',mwt:'Merriam-Webster Thesaurus (inglés)',larousse:'Larousse (francés)',cnrtl:'CNRTL, sinónimos en francés'}[d],k:'Alt+'+n,ed:1,run:()=>plumaTools.dict(d,wordForDict())})),
+ ...Object.entries(KEYDICT).map(([n,d])=>({id:'d_'+d,t:{rae:'Diccionario de la lengua española (RAE)',iec:'Diccionari de la llengua catalana (IEC)',jane:"Sinònims d'Albert Jané (IEC)",mw:'Merriam-Webster (inglés)',mwt:'Merriam-Webster Thesaurus (inglés)',larousse:'Larousse (francés)',cnrtl:'CNRTL, sinónimos en francés',caes:'Diccionario catalán → castellano',esca:'Diccionario castellano → catalán'}[d],k:'Alt+'+n,ed:1,run:()=>plumaTools.dict(d,wordForDict())})),
  {id:'raya',t:'Insertar raya (—)',k:'Alt+Shift+-',ed:1,run:()=>insTxt('—')},
  {id:'nbsp',t:'Insertar espacio duro (no se parte entre líneas)',k:'Ctrl+Shift+Space',ed:1,run:()=>insTxt(' ')},
  {id:'ang',t:'Poner la selección entre comillas angulares «»',k:'Alt+Shift+Q',ed:1,run:()=>insTxt('«'+getSelection().toString()+'»')},

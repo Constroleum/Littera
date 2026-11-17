@@ -102,6 +102,14 @@ html{-webkit-text-size-adjust:100%}body{-webkit-tap-highlight-color:transparent;
 #copt{display:flex;gap:10px;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--ln)}#copt .row{display:flex;gap:10px;flex-wrap:wrap;width:100%}#copt label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:2px;flex:1;min-width:190px}
 #bkb details{margin-top:6px}#bkb summary{cursor:pointer;color:var(--mu)}
 #cvp{position:relative}
+#insH{display:flex;justify-content:flex-end}#insH button{font-size:12px}
+body.insMax #ctr{display:none}body.insMax #ins{flex:1;width:auto;max-width:none;align-items:center}
+.compose.fichaF #ins{display:flex;position:fixed;inset:0;z-index:32;background:var(--bg);width:auto;border:0;padding:34px 20px;align-items:center}
+body.insMax #ins>*,.fichaF #ins>*{width:100%;max-width:860px}
+body.insMax #meta textarea,body.insMax #iSyn,body.insMax #iNo,.fichaF #meta textarea,.fichaF #iSyn,.fichaF #iNo{min-height:120px;font-size:14px}
+body.insMax #meta input[type=text],.fichaF #meta input[type=text]{font-size:14px;padding:6px 8px}
+#fbtn{display:none;position:fixed;top:10px;right:14px;z-index:33;opacity:.28;transition:opacity .2s;gap:6px}#fbtn:hover,#fbtn:focus-within{opacity:1}
+.compose #fbtn{display:flex}#fsel{display:none;max-width:220px}.fichaF #fsel{display:inline-block}
 </style></head><body>
 <div id="top">
  <button class="mb" id="bB">☰</button><img class="lg" src="assets/logo-64.png" alt=""><b>Littera</b>
@@ -133,7 +141,9 @@ html{-webkit-text-size-adjust:100%}body{-webkit-tap-highlight-color:transparent;
   <div id="cork"></div>
   <div id="lienzo"></div>
  </section>
+ <div id="fbtn"><select id="fsel" title="Ir a otra ficha"></select><button id="fbt" title="Ver/ocultar la ficha en modo concentración">🎭 Ficha</button></div>
  <aside id="ins">
+  <div id="insH"><button id="insMax" title="Ampliar la ficha a toda la pantalla (oculta el texto/lienzo). Vuelve a pulsar para reducirla">⤢ Ampliar ficha</button></div>
   <div id="meta"></div>
   <div><label>Sinopsis</label><textarea id="iSyn" placeholder="Resumen en una frase…"></textarea></div>
   <div><label>Estado</label><select id="iSt"><option>Borrador</option><option>Revisión</option><option>Final</option><option>Pendiente</option></select></div>
