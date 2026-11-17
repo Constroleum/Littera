@@ -121,15 +121,15 @@ page.addEventListener("keydown",e=>{
 /* Modo concentración: sin distracciones y a pantalla completa (Ctrl+Mayús+F; Esc para salir) */
 function focusToast(t){let d=document.getElementById('fcT');if(!d){d=document.createElement('div');d.id='fcT';d.style.cssText='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#000b;color:#fff;padding:8px 16px;border-radius:20px;font:14px system-ui;z-index:9999;transition:opacity .6s;pointer-events:none';document.body.appendChild(d)}
  d.textContent=t;d.style.opacity=1;clearTimeout(d._t);d._t=setTimeout(()=>d.style.opacity=0,2600)}
-function enterFocus(){document.body.classList.add("compose");setView("ed");
+function enterFocus(){document.body.classList.add("compose");if(view!=="lc")setView("ed");
  try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
- focusToast('Modo concentración · Esc para salir');page.focus()}
+ focusToast('Modo concentración · Esc para salir');if(view!=="lc")page.focus();else if(window.__LC)setTimeout(()=>window.__LC.refresh(),80)}
 function exitFocus(){document.body.classList.remove("compose");try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}}
 const toggleFocus=()=>document.body.classList.contains("compose")?exitFocus():enterFocus();
 window.__focusToggle=toggleFocus;
 $("#bFoc").onclick=enterFocus;
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement)document.body.classList.remove("compose")});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("compose"))exitFocus();
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("compose")&&!(view==="lc"&&window.__LC&&window.__LC.busy&&window.__LC.busy()))exitFocus();
 });
 
 $("#bB").onclick=()=>{document.body.classList.toggle("showB");document.body.classList.remove("showI")};
