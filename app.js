@@ -765,9 +765,9 @@ page.addEventListener('contextmenu',async e=>{
 const tp=$('#tp'),tpb=$('#tpb');
 let tpTab='th',thTarget=null,thWord='',gr={matches:[],busy:false,msg:'',ran:false};
 tpb.addEventListener('mousedown',e=>{if(e.target.closest('.chip,.gi,.gi *,button'))e.preventDefault()});
-$('#tpx').onclick=()=>{tp.hidden=true;CSS.highlights&&CSS.highlights.delete('gram')};
+$('#tpx').onclick=()=>{tp.hidden=true;CSS.highlights&&(CSS.highlights.delete('gram'),CSS.highlights.delete('met'))};
 $$('.tph [data-t]').forEach(b=>b.onclick=()=>{tpTab=b.dataset.t;renderTp()});
-function renderTp(){$$('.tph [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===tpTab));tpTab==='th'?renderTh():renderGr()}
+function renderTp(){$$('.tph [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===tpTab));tp.classList.toggle('me',tpTab==='me');tpTab==='th'?renderTh():tpTab==='gr'?renderGr():meRun()}
 function showTp(tab){tpTab=tab;$('#pg').hidden=true;tp.hidden=false;renderTp()}
 function matchCase(src,rep){
  if(src.length>1&&src===src.toUpperCase()&&src!==src.toLowerCase())return rep.toUpperCase();
@@ -829,6 +829,7 @@ function langForDict(){const l=docLang();return l==='all'?'es':l}
 const ACT=[
  {id:'focus',t:'Modo concentración (pantalla completa)',k:'Ctrl+Shift+F',run:()=>toggleFocus()},
  {id:'thes',t:'Sinónimos y antónimos (sin conexión)',k:'F7',ed:1,run:()=>openThes()},
+ {id:'metric',t:'Verificador de métrica poética (castellano y catalán)',k:'F9',ed:1,run:()=>showTp('me')},
  {id:'dict',t:'Diccionario del idioma del documento',k:'F8',ed:1,run:()=>plumaTools.dict(DICT_BY_LANG[langForDict()],wordForDict())},
  {id:'synon',t:'Sinónimos en línea del idioma del documento',k:'Shift+F8',ed:1,run:()=>plumaTools.dict(SYN_BY_LANG[langForDict()],wordForDict())},
  ...Object.entries(KEYDICT).map(([n,d])=>({id:'d_'+d,t:{rae:'Diccionario de la lengua española (RAE)',iec:'Diccionari de la llengua catalana (IEC)',jane:"Sinònims d'Albert Jané (IEC)",mw:'Merriam-Webster (inglés)',mwt:'Merriam-Webster Thesaurus (inglés)',larousse:'Larousse (francés)',cnrtl:'CNRTL, sinónimos en francés',caes:'Diccionario catalán → castellano',esca:'Diccionario castellano → catalán'}[d],k:'Alt+'+n,ed:1,run:()=>plumaTools.dict(d,wordForDict())})),
@@ -881,10 +882,53 @@ if($('#bKeys'))$('#bKeys').onclick=keysOpen;
 kSync();
 page.addEventListener('beforeinput',e=>{if(!KP.dash||e.inputType!=='insertText'||e.data!==' ')return;const s=getSelection();if(!s.isCollapsed||!s.anchorNode||s.anchorNode.nodeType!==3)return;
  const n=s.anchorNode,o=s.anchorOffset;if(o>=2&&n.data.slice(o-2,o)==='--'&&n.data[o-3]!=='-'){e.preventDefault();const r=document.createRange();r.setStart(n,o-2);r.setEnd(n,o);s.removeAllRanges();s.addRange(r);document.execCommand('insertText',false,KP.dashsp?'— ':'—')}});
-$('#bSy').onclick=()=>openThes();
+$('#bSy').onclick=()=>openThes();$('#bMe').onclick=()=>showTp('me');
 /* Windows: estado de la sincronización con OneDrive/SharePoint en el pie */
 if(window.plumaOD){let b=null;const sb=m=>{if(!m)return;if(!b){const f=document.querySelector('#foot');if(!f)return;b=document.createElement('span');b.id='odst';b.style.cssText='margin-left:12px;font-size:12px';f.appendChild(b)}b.textContent=m.text;b.title=m.text;b.style.color=m.level?'#b3261e':''};plumaOD.onBadge(sb);plumaOD.state().then(sb).catch(()=>{})}
 
+/* ===== Verificador de métrica poética (castellano y catalán) ===== */
+const ME={lang:'auto',exp:0,sin:true,res:null,src:null};
+function meSource(){
+ const s=getSelection();let r=null;
+ if(s.rangeCount&&!s.isCollapsed&&page.contains(s.anchorNode))r=s.getRangeAt(0);else if(range&&!range.collapsed&&page.contains(range.commonAncestorContainer))r=range;
+ let bl=[...page.querySelectorAll(':scope>*')];
+ bl=r?bl.filter(b=>r.intersectsNode(b)):bl.filter(b=>!/^H[1-6]$/.test(b.tagName));
+ const lines=[],map=[];
+ bl.forEach(b=>{const t=(b.innerText||'').replace(/ /g,' ');if(!t.trim()){lines.push('');map.push(b);return}t.split('\n').forEach(x=>{lines.push(x);map.push(b)})});
+ return{text:lines.join('\n'),map,sel:!!r,nb:bl.length}}
+const meLang=()=>ME.lang==='auto'?(docLang()==='ca'?'ca':'es'):ME.lang;
+function meRun(){ME.src=meSource();ME.res=Metrica.analyze(ME.src.text,{lang:meLang(),sinalefa:ME.sin,expected:ME.exp});renderMe()}
+function meSyl(l){return l.words.map((w,k)=>{const sep=k?(w.syn?'<span class="msy">‿</span>':' '):'';let o='';
+ w.syl.forEach((s,j)=>{const t=esc(s),st=j===w.stress&&(w.tonic||k===l.words.length-1);o+=(j&&!w.syl[j-1].endsWith('·')?'<i class="msd">·</i>':'')+(st?`<b>${t}</b>`:t)});return sep+o}).join('')}
+function meReport(){const r=ME.res,es=r.lang==='es';let t=(es?'Análisis métrico (castellano)':'Anàlisi mètrica (català)')+'\n\n';
+ r.lines.forEach(l=>{t+=`${String(l.i).padStart(2)}. [${l.count}] ${l.letter.padEnd(2)} ${l.words.map((w,k)=>(k?(w.syn?'‿':' '):'')+w.syl.join('-')).join('')}\n`});
+ t+='\n'+(es?'Esquema: ':'Esquema: ')+r.scheme+'\n';r.forms.forEach(f=>t+=f+'\n');return t}
+function renderMe(){const r=ME.res,es=r.lang==='es',nm=n=>Metrica.nameOf(n,r.lang);
+ let h=`<div id="mopt"><select id="mlg" title="Idioma de las reglas"><option value="auto"${ME.lang==='auto'?' selected':''}>Idioma del documento (${meLang()==='ca'?'català':'castellano'})</option><option value="es"${ME.lang==='es'?' selected':''}>Castellano</option><option value="ca"${ME.lang==='ca'?' selected':''}>Català</option></select>
+ <select id="mex" title="Medida esperada"><option value="0">Medida: automática</option>${Array.from({length:13},(_,i)=>i+2).map(n=>`<option value="${n}"${ME.exp===n?' selected':''}>${n} · ${esc(nm(n))}</option>`).join('')}</select></div>
+ <div id="mopt"><label class="chk" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="msi" style="width:auto"${ME.sin?' checked':''}>Aplicar sinalefa</label><span class="sp" style="flex:1"></span><button id="mgo">Analizar de nuevo</button><button id="mcp">Copiar informe</button></div>
+ <small>${ME.src.sel?`Analizando la selección (${ME.src.nb} bloque${ME.src.nb===1?'':'s'}).`:'Analizando todo el documento (sin títulos). Selecciona unos versos para analizar solo esos.'} Cada párrafo o salto de línea es un verso; una línea en blanco separa estrofas.</small>`;
+ if(!r.lines.length){tpb.innerHTML=h+'<small><b>No hay versos que analizar.</b> Escribe o selecciona un poema.</small>';meBind();return}
+ const top=Object.entries(r.summary.freq).sort((a,b)=>b[1]-a[1])[0],bad=r.lines.filter(l=>l.status==='bad').length,warn=r.lines.filter(l=>l.status==='warn').length;
+ h+=`<div class="msum"><b>${r.lines.length}</b> versos · medida dominante: <b>${top[0]}</b> (${esc(nm(+top[0]))})${r.expected?` · esperada: <b>${r.expected}</b>`:''}<br>Esquema: <b>${esc(r.scheme)}</b>${r.forms.length?'<br>'+r.forms.map(f=>'➜ <b>'+esc(f)+'</b>').join('<br>'):''}${r.expected?`<br>${bad?`<span style="color:#b3261e">${bad} verso(s) fuera de medida</span>`:'<span style="color:#2e7d4f">Todos los versos encajan en la medida</span>'}${warn?` · ${warn} con dialefa/sinéresis`:''}`:''}</div>`;
+ const stz={};r.stanzas.forEach(s=>stz[s.from]=s);
+ r.lines.forEach((l,i)=>{const s=stz[l.i];
+  if(s)h+=`<div class="mst"><b>Estrofa ${r.stanzas.indexOf(s)+1}</b> · ${s.n} versos · ${esc(s.scheme)}${s.form?' · '+esc(s.form):''}</div>`;
+  h+=`<div class="mrow ${l.status}" data-i="${i}" title="Clic para localizar el verso en el texto"><span class="mn">${l.i}</span><div class="mv"><div class="ms">${meSyl(l)}</div><div class="mm"><b>${l.count}</b> · ${esc(l.name)} · ${l.arte}${l.tipo?' · '+esc(l.tipo):''}<br>sinalefas ${l.merges} · hiatos ${l.hiatus} · acentos: ${l.stressPos.join(', ')}</div>${l.note?`<div class="mw">${esc(l.note)}</div>`:''}</div><div class="mr"><b>${l.letter}</b><small>${l.rimaKind?esc(l.rimaKind)+'<br>-'+esc(l.rc):'suelto'}</small></div></div>`});
+ h+=`<small>Rima: MAYÚSCULA = consonante, minúscula = asonante, – = verso suelto. Sílabas en negrita = acento tónico; ‿ = sinalefa.</small>
+ <details><summary>Reglas aplicadas (${es?'castellano':'català'})</summary><small>${es?
+ 'Se cuentan todas las sílabas métricas hasta el final del verso: si la última palabra es <b>aguda</b> se suma 1, si es <b>esdrújula</b> se resta 1. <b>Sinalefa</b>: la vocal final de una palabra se une con la vocal (o h + vocal) inicial de la siguiente (también con y). Diptongos y triptongos cuentan una sílaba; los hiatos, dos (la sinéresis y la dialefa se indican como posibles). La rima es <b>consonante</b> si coinciden todos los sonidos desde la última vocal tónica y <b>asonante</b> si solo coinciden las vocales (i/u átonas finales equivalen a e/o).':
+ 'Es compta <b>fins a la darrera síl·laba tònica</b> (inclosa): un vers de 10 síl·labes (decasíl·lab) equival a l\'endecasílab castellà. Hi ha <b>sinalefa</b> (elisió) entre vocal final i vocal (o h) inicial; les contraccions amb apòstrof (l\'amor, d\'ell) s\'ajunten a la paraula següent. Els diftongs decreixents (ai, ei, oi, ui, au, eu, iu, ou) i qu/gu + vocal compten una síl·laba; la dièresi (ï, ü) i els diftongs creixents (ia, ie, io…) fan hiat (la sinèresi s\'indica com a possible). Accent: gràfic o, si no n\'hi ha, plana en -a, -e, -i, -o, -as, -es, -is, -os, -us, -en, -in; aguda en la resta (i en els diftongs finals -au, -eu, -iu, -ou). La rima no distingeix e/è ni o/ò sense accent gràfic.'}</small></details>
+ <small>Es una ayuda orientativa: el acento de las palabras átonas, la sinéresis y la dialefa dependen del poeta y de la lectura.</small>`;
+ tpb.innerHTML=h;meBind()}
+function meBind(){
+ const q=s=>tpb.querySelector(s);
+ q('#mlg').onchange=e=>{ME.lang=e.target.value;meRun()};q('#mex').onchange=e=>{ME.exp=+e.target.value;meRun()};q('#msi').onchange=e=>{ME.sin=e.target.checked;meRun()};
+ q('#mgo').onclick=meRun;
+ q('#mcp').onclick=()=>{if(!ME.res||!ME.res.lines.length)return;const t=meReport();try{navigator.clipboard.writeText(t);q('#mcp').textContent='Copiado ✓'}catch(e){}};
+ tpb.querySelectorAll('.mrow').forEach(r=>r.onclick=()=>{const l=ME.res.lines[+r.dataset.i],b=ME.src.map[l.row];if(!b||!b.isConnected)return;
+  try{const rg=document.createRange();rg.selectNodeContents(b);CSS.highlights.set('met',new Highlight(rg))}catch(e){}
+  b.scrollIntoView({block:'center',behavior:'smooth'})})}
 /* Gramática (LanguageTool, opcional y en línea) */
 function plainMap(){
  const tw=document.createTreeWalker(page,NodeFilter.SHOW_TEXT);let text='',map=[],n,last=null;

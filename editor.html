@@ -2,7 +2,7 @@
 <html lang="es"><head><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="theme-color" content="#0a1236"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name='apple-mobile-web-app-capable' content='yes'><meta name='mobile-web-app-capable' content='yes'><meta name='apple-mobile-web-app-title' content='Littera'><meta name='apple-mobile-web-app-status-bar-style' content='default'>
 <title>Littera — escritura por proyectos</title>
-<link rel="stylesheet" href="fonts/fonts.css"><script src="themes.js"></script><script src="hyph.js"></script>
+<link rel="stylesheet" href="fonts/fonts.css"><script src="themes.js"></script><script src="hyph.js"></script><script src="metrica.js"></script>
 <style>
 :root{--bg:#ece9e2;--pn:#fbfaf7;--ln:#ddd8cc;--tx:#2b2a27;--mu:#807b6f;--ac:#8a4b2a;--ah:#f0e3d8;--paper:#fff;--ink:#222;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171614;--pn:#22201e;--ln:#38352f;--tx:#e8e4da;--mu:#9a9588;--ac:#e0a67c;--ah:#3a2e25;--paper:#2a2825;--ink:#e8e4da}}
@@ -67,7 +67,17 @@ html{-webkit-text-size-adjust:100%}body{-webkit-tap-highlight-color:transparent;
 #page{max-width:none!important}
 #tb2>*{flex-shrink:0}#sPp{width:170px}#sZm{width:130px}
 #tp{position:fixed;right:14px;top:92px;width:330px;max-height:calc(100vh - 150px);display:flex;flex-direction:column;background:var(--pn);border:1px solid var(--ln);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:40}
-#tp[hidden],#cm[hidden]{display:none}
+#tp[hidden],#cm[hidden]{display:none}#tp.me{width:480px}
+.mrow{display:flex;gap:8px;padding:5px 6px;border-radius:6px;border-left:3px solid var(--ln);cursor:pointer}.mrow:hover{background:var(--ah)}
+.mrow.ok{border-left-color:#3a9a5b}.mrow.warn{border-left-color:#e0a030}.mrow.bad{border-left-color:#c0392b}
+.mn{color:var(--mu);min-width:22px;text-align:right;font-size:11px;padding-top:2px}.mv{flex:1;min-width:0}
+.ms{font-size:13.5px;line-height:1.45}.ms b{color:var(--ac)}.msd{color:var(--mu);font-style:normal;margin:0 1px}.msy{color:var(--ac);margin:0 1px}
+.mm{font-size:11px;color:var(--mu)}.mw{font-size:11px;color:#b3261e}.mrow.warn .mw{color:#a06a00}
+.mr{text-align:center;min-width:44px}.mr b{display:block;font-size:15px}.mr small{color:var(--mu);font-size:10px;word-break:break-all}
+.mst{margin-top:6px;font-size:11px;color:var(--mu);letter-spacing:.04em}.mst b{color:var(--tx)}
+.msum{background:var(--ah);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.5}
+#mopt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#mopt select{flex:1;min-width:120px}
+::highlight(met){background:#ffd54f88}
 .tph{display:flex;gap:2px;padding:6px;border-bottom:1px solid var(--ln)}
 #tpb{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
 #tpb .row{display:flex;gap:6px}#tpb .row input,#tpb .row select{flex:1}
@@ -136,7 +146,7 @@ body.insMax #meta input[type=text],.fichaF #meta input[type=text]{font-size:14px
    <div class="g"><button id="bLink">Enlace</button><button id="bTab">Tabla</button><button id="bImg">Imagen</button><button data-c="insertHorizontalRule">―</button><button data-c="removeFormat">Tx</button></div>
    <input type="file" id="fImg" accept="image/*" hidden>
   </div>
-  <div id='tb2'><select id='sPp' title='Tamaño del papel'></select><select id='sZm' title='Zoom'><option value='fit'>Ajustar al ancho</option><option value='50'>50%</option><option value='75'>75%</option><option value='100'>100%</option><option value='125'>125%</option><option value='150'>150%</option></select><button id='bSy' title='Sinónimos y antónimos (Mayús+F7)'>Sinónimos</button><button id='bGr' title='Revisión gramatical (en línea)'>Gramática</button><select id='sLg' title='Idioma de corrección ortográfica'><option value='es'>Castellano</option><option value='ca'>Català</option><option value='en'>English</option><option value='fr'>Français</option><option value='all'>Todos los idiomas</option></select><select id='sBk' title='Estilo de libro'><option value=''>Estilo de libro…</option><option>Párrafo normal</option><option>Texto de novela</option><option>Capítulo</option><option>Subtítulo</option><option>Epígrafe</option><option>Verso</option><option>Separador de escena</option></select><label>1.ª línea (cm)<input data-p='textIndent' type='number' step='.25'></label><label>Izq. (cm)<input data-p='marginLeft' type='number' step='.25' min='0'></label><label>Der. (cm)<input data-p='marginRight' type='number' step='.25' min='0'></label><label>Antes (pt)<input data-p='marginTop' type='number' step='1' min='0'></label><label>Después (pt)<input data-p='marginBottom' type='number' step='1' min='0'></label><label>Interl.<input data-p='lineHeight' type='number' step='.05' min='.8' max='4'></label><button id='bPg2' title='Formato de párrafo (todas las opciones)'>¶ Párrafo…</button><button id='bMk' title='Mostrar marcas de párrafo'>¶</button></div>
+  <div id='tb2'><select id='sPp' title='Tamaño del papel'></select><select id='sZm' title='Zoom'><option value='fit'>Ajustar al ancho</option><option value='50'>50%</option><option value='75'>75%</option><option value='100'>100%</option><option value='125'>125%</option><option value='150'>150%</option></select><button id='bSy' title='Sinónimos y antónimos (Mayús+F7)'>Sinónimos</button><button id='bMe' title='Verificador de métrica poética en castellano y catalán (F9)'>Métrica</button><button id='bGr' title='Revisión gramatical (en línea)'>Gramática</button><select id='sLg' title='Idioma de corrección ortográfica'><option value='es'>Castellano</option><option value='ca'>Català</option><option value='en'>English</option><option value='fr'>Français</option><option value='all'>Todos los idiomas</option></select><select id='sBk' title='Estilo de libro'><option value=''>Estilo de libro…</option><option>Párrafo normal</option><option>Texto de novela</option><option>Capítulo</option><option>Subtítulo</option><option>Epígrafe</option><option>Verso</option><option>Separador de escena</option></select><label>1.ª línea (cm)<input data-p='textIndent' type='number' step='.25'></label><label>Izq. (cm)<input data-p='marginLeft' type='number' step='.25' min='0'></label><label>Der. (cm)<input data-p='marginRight' type='number' step='.25' min='0'></label><label>Antes (pt)<input data-p='marginTop' type='number' step='1' min='0'></label><label>Después (pt)<input data-p='marginBottom' type='number' step='1' min='0'></label><label>Interl.<input data-p='lineHeight' type='number' step='.05' min='.8' max='4'></label><button id='bPg2' title='Formato de párrafo (todas las opciones)'>¶ Párrafo…</button><button id='bMk' title='Mostrar marcas de párrafo'>¶</button></div>
   <div id="scroll"><input id="ttl" type="text" aria-label="Título"><div id="page" contenteditable="true" spellcheck="true"></div></div>
   <div id="cork"></div>
   <div id="lienzo"></div>
@@ -153,7 +163,7 @@ body.insMax #meta input[type=text],.fichaF #meta input[type=text]{font-size:14px
  </aside>
 </div>
 <div id="foot"><span id="wc"></span><span id="tw"></span><div id="bar"><i></i></div><span class="sp"></span><span id="sv">Guardado</span></div>
-<div id="tp" hidden><div class="tph"><button data-t="th" class="on">Sinónimos</button><button data-t="gr">Gramática</button><span class="sp"></span><button id="tpx" title="Cerrar">✕</button></div><div id="tpb"></div></div>
+<div id="tp" hidden><div class="tph"><button data-t="th" class="on">Sinónimos</button><button data-t="gr">Gramática</button><button data-t="me">Métrica</button><span class="sp"></span><button id="tpx" title="Cerrar">✕</button></div><div id="tpb"></div></div>
 <div id="pg" hidden><div class="tph"><b style="padding:4px 8px">Formato de párrafo</b><span class="sp"></span><button id="pgx" title="Cerrar">✕</button></div><div id="pgb"></div></div>
 <div id="cm" hidden></div>
 <div id="modal"><div><div class="mh"><b>Manuscrito compilado</b><span class="sp"></span><span id="mSt" style="font-size:12px;color:var(--mu);margin-right:8px"></span><button id="mCp">Copiar todo</button><button id="mPr" title="Genera el PDF con la misma maquetación que «Libro y exportar»">Guardar PDF</button><button id="mWd">Guardar Word</button><button id="mCl">Cerrar</button></div><div id="copt"></div><div id="out"></div></div></div>
